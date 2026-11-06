@@ -22,3 +22,6 @@ class ProdutoAdmin(admin.ModelAdmin):
     readonly_fields = ("criado_em", "atualizado_em")
 
     list_per_page = 20
+
+    def has_delete_permission(self, request, obj=None):
+        return False
