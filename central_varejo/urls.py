@@ -38,4 +38,9 @@ urlpatterns = [
         estoque_views.registrar_entrada,
         name="registrar_entrada",
     ),
+    path(
+        "estoque/ajuste/",
+        estoque_views.registrar_ajuste,
+        name="registrar_ajuste",
+    ),
 ]

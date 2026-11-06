@@ -1,13 +1,11 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.core.exceptions import PermissionDenied
 from django.db import transaction
 from django.shortcuts import render, redirect
-from django.views.decorators.http import require_POST
 
-from .forms import EntradaEstoqueForm
+from .forms import EntradaEstoqueForm, AjusteEstoqueForm
 from .models import Estoque, MovimentacaoEstoque
-
-from django.core.exceptions import PermissionDenied
 
 def eh_administrador(user):
     if not user.groups.filter(name="Administrador").exists():
@@ -58,5 +56,65 @@ def registrar_entrada(request):
     return render(
         request,
         "estoque/registrar_entrada.html",
+        {"form": form},
+    )
+
+@login_required
+@user_passes_test(eh_administrador)
+def registrar_ajuste(request):
+    if request.method == "POST":
+        form = AjusteEstoqueForm(request.POST)
+
+        if form.is_valid():
+            produto = form.cleaned_data["produto"]
+            nova_quantidade = form.cleaned_data["current_stock"]
+            motivo = form.cleaned_data["reason"]
+
+            try:
+                with transaction.atomic():
+                    estoque = Estoque.objects.select_for_update().get(produto=produto)
+
+                    saldo_anterior = estoque.current_stock
+                    diferenca = abs(nova_quantidade - saldo_anterior)
+
+                    if diferenca == 0:
+                        form.add_error(
+                            "current_stock",
+                            "A nova quantidade deve ser diferente do saldo atual.",
+                        )
+                    else:
+                        estoque.current_stock = nova_quantidade
+                        estoque.save(update_fields=["current_stock"])
+
+                        MovimentacaoEstoque.objects.create(
+                            produto=produto,
+                            tipo=MovimentacaoEstoque.Tipo.AJUSTE,
+                            quantity=diferenca,
+                            user=request.user,
+                            reason=(
+                                f"Saldo anterior: {saldo_anterior}. "
+                                f"Novo saldo: {nova_quantidade}. "
+                                f"Motivo: {motivo}"
+                            ),
+                        )
+
+                if not form.errors:
+                    messages.success(
+                        request,
+                        "Ajuste de estoque registrado com sucesso.",
+                    )
+                    return redirect("registrar_ajuste")
+
+            except Estoque.DoesNotExist:
+                messages.error(
+                    request,
+                    "O produto selecionado não possui registro de estoque.",
+                )
+    else:
+        form = AjusteEstoqueForm()
+
+    return render(
+        request,
+        "estoque/registrar_ajuste.html",
         {"form": form},
     )

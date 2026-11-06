@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ajustar Estoque - Central do Varejo</title>
+</head>
+
+<body>
+    <h1>Ajustar Estoque</h1>
+
+    {% if messages %}
+    {% for message in messages %}
+    <p>{{ message }}</p>
+    {% endfor %}
+    {% endif %}
+
+    <form method="POST">
+        {% csrf_token %}
+
+        {{ form.as_p }}
+
+        <button type="submit">Confirmar Ajuste</button>
+    </form>
+
+    <p>
+        <a href="{% url 'listar_produtos' %}">Voltar para produtos</a>
+    </p>
+</body>
+
+</html>
