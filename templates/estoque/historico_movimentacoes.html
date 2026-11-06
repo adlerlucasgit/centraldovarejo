@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Histórico de Movimentações - Central do Varejo</title>
+</head>
+
+<body>
+
+    <h1>Histórico de Movimentações de Estoque</h1>
+
+    {% if messages %}
+    {% for message in messages %}
+    <p>{{ message }}</p>
+    {% endfor %}
+    {% endif %}
+
+    {% if movimentacoes %}
+
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Produto</th>
+                <th>Código</th>
+                <th>Tipo</th>
+                <th>Quantidade</th>
+                <th>Responsável</th>
+                <th>Data e horário</th>
+                <th>Motivo</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for movimentacao in movimentacoes %}
+            <tr>
+                <td>{{ movimentacao.produto.nome }}</td>
+                <td>{{ movimentacao.produto.codigo }}</td>
+                <td>{{ movimentacao.get_tipo_display }}</td>
+                <td>{{ movimentacao.quantity }}</td>
+                <td>{{ movimentacao.user.username }}</td>
+                <td>{{ movimentacao.date_time|date:"d/m/Y H:i" }}</td>
+                <td>{{ movimentacao.reason|default:"Não informado" }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% else %}
+
+    <p>Nenhuma movimentação de estoque registrada.</p>
+
+    {% endif %}
+
+    <p>
+        <a href="{% url 'listar_produtos' %}">Voltar para produtos</a>
+    </p>
+
+</body>
+
+</html>

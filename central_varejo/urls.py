@@ -43,4 +43,9 @@ urlpatterns = [
         estoque_views.registrar_ajuste,
         name="registrar_ajuste",
     ),
+    path(
+        "estoque/historico/",
+        estoque_views.historico_movimentacoes,
+        name="historico_movimentacoes",
+    ),
 ]

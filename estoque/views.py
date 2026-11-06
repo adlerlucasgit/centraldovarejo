@@ -118,3 +118,14 @@ def registrar_ajuste(request):
         "estoque/registrar_ajuste.html",
         {"form": form},
     )
+
+@login_required
+@user_passes_test(eh_administrador)
+def historico_movimentacoes(request):
+    movimentacoes = MovimentacaoEstoque.objects.select_related("produto", "user").all()
+
+    return render(
+        request,
+        "estoque/historico_movimentacoes.html",
+        {"movimentacoes": movimentacoes},
+    )
