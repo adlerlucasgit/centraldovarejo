@@ -67,6 +67,12 @@ class MovimentacaoEstoque(models.Model):
         ordering = ["-date_time"]
         verbose_name = "Movimentação de estoque"
         verbose_name_plural = "Movimentações de estoque"
+        constraints = [
+            models.CheckConstraint(
+                condition=models.Q(quantity__gt=0),
+                name="movimentacao_quantidade_maior_que_zero",
+            ),
+        ]
 
     def __str__(self):
         return f"{self.get_tipo_display()} - {self.produto.nome}"
