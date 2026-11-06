@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Produtos | Central do Varejo</title>
+</head>
+
+<body>
+    <h1>Produtos cadastrados</h1>
+
+    {% if produtos %}
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Código</th>
+                <th>Nome</th>
+                <th>Preço</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for produto in produtos %}
+            <tr>
+                <td>{{ produto.codigo }}</td>
+                <td>{{ produto.nome }}</td>
+                <td>R$ {{ produto.preco|floatformat:2 }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>Nenhum produto ativo cadastrado.</p>
+    {% endif %}
+
+    <p>
+        <a href="{% url 'inicio' %}">Voltar ao início</a>
+    </p>
+</body>
+
+</html>

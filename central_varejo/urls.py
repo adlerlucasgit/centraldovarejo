@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.urls import path
 from django.contrib.auth import views as auth_views
+from produtos import views as produtos_views
 
 from . import views
 
@@ -15,4 +16,5 @@ urlpatterns = [
     path("logout/", auth_views.LogoutView.as_view(), name="logout"),
     # Página inicial protegida
     path("", views.inicio, name="inicio"),
+    path("produtos/", produtos_views.listar_produtos, name="listar_produtos"),
 ]
