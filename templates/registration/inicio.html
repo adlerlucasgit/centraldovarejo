@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Início | Central do Varejo</title>
+</head>
+
+<body>
+
+    <h1>Central do Varejo</h1>
+
+    <h2>Bem-vindo, {{ request.user.username }}!</h2>
+
+    <p>Você está autenticado no sistema.</p>
+
+    <form method="POST" action="{% url 'logout' %}">
+        {% csrf_token %}
+
+        <button type="submit">Sair do sistema</button>
+    </form>
+
+</body>
+
+</html>
