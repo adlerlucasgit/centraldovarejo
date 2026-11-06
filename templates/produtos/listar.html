@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 
 <head>
     <meta charset="UTF-8">
@@ -17,6 +17,7 @@
                 <th>Código</th>
                 <th>Nome</th>
                 <th>Preço</th>
+                <th>Ações</th>
             </tr>
         </thead>
 
@@ -26,10 +27,29 @@
                 <td>{{ produto.codigo }}</td>
                 <td>{{ produto.nome }}</td>
                 <td>R$ {{ produto.preco|floatformat:2 }}</td>
+
+                <td>
+                    {% if perms.produtos.change_produto %}
+                    <a href="{% url 'editar_produto' produto.id %}">
+                        Editar
+                    </a>
+
+                    <form method="POST" action="{% url 'desativar_produto' produto.id %}" style="display: inline;"
+                        onsubmit="return confirm('Deseja realmente desativar este produto?');">
+
+                        {% csrf_token %}
+
+                        <button type="submit">Desativar</button>
+                    </form>
+                    {% else %}
+                    <span>Sem ações disponíveis</span>
+                    {% endif %}
+                </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
+
     {% else %}
     <p>Nenhum produto ativo cadastrado.</p>
     {% endif %}

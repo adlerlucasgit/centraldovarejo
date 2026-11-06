@@ -1,5 +1,6 @@
 from django.contrib.auth.decorators import login_required, permission_required
 from django.shortcuts import render, redirect, get_object_or_404
+from django.views.decorators.http import require_POST
 
 from .forms import ProdutoForm
 from .models import Produto
@@ -49,3 +50,15 @@ def editar_produto(request, produto_id):
             "produto": produto,
         },
     )
+
+
+@login_required
+@permission_required("produtos.change_produto", raise_exception=True)
+@require_POST
+def desativar_produto(request, produto_id):
+    produto = get_object_or_404(Produto, id=produto_id)
+
+    produto.ativo = False
+    produto.save(update_fields=["ativo", "atualizado_em"])
+
+    return redirect("listar_produtos")

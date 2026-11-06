@@ -27,4 +27,9 @@ urlpatterns = [
         produtos_views.editar_produto,
         name="editar_produto",
     ),
+    path(
+        "produtos/desativar/<int:produto_id>/",
+        produtos_views.desativar_produto,
+        name="desativar_produto",
+    ),
 ]
