@@ -22,4 +22,9 @@ urlpatterns = [
         produtos_views.cadastrar_produto,
         name="cadastrar_produto",
     ),
+    path(
+        "produtos/editar/<int:produto_id>/",
+        produtos_views.editar_produto,
+        name="editar_produto",
+    ),
 ]
