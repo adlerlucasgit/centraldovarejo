@@ -13,6 +13,11 @@ def eh_administrador(user):
 
     return True
 
+def pode_consultar_estoque(user):
+    if user.groups.filter(name__in=["Administrador", "Caixa"]).exists():
+        return True
+    raise PermissionDenied
+
 @login_required
 @user_passes_test(eh_administrador)
 def registrar_entrada(request):
@@ -128,4 +133,20 @@ def historico_movimentacoes(request):
         request,
         "estoque/historico_movimentacoes.html",
         {"movimentacoes": movimentacoes},
+    )
+
+
+@login_required
+@user_passes_test(pode_consultar_estoque)
+def consultar_estoque(request):
+    estoques = (
+        Estoque.objects.select_related("produto")
+        .filter(produto__ativo=True)
+        .order_by("produto__nome")
+    )
+
+    return render(
+        request,
+        "estoque/consultar_estoque.html",
+        {"estoques": estoques},
     )

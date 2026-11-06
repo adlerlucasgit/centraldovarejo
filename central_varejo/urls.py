@@ -48,4 +48,9 @@ urlpatterns = [
         estoque_views.historico_movimentacoes,
         name="historico_movimentacoes",
     ),
+    path(
+        "estoque/",
+        estoque_views.consultar_estoque,
+        name="consultar_estoque",
+    ),
 ]

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consulta de Estoque - Central do Varejo</title>
+</head>
+
+<body>
+    <h1>Consulta de Estoque</h1>
+
+    {% if estoques %}
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Código</th>
+                <th>Produto</th>
+                <th>Quantidade</th>
+                <th>Preço de venda</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for estoque in estoques %}
+            <tr>
+                <td>{{ estoque.produto.codigo }}</td>
+                <td>{{ estoque.produto.nome }}</td>
+                <td>{{ estoque.current_stock }}</td>
+                <td>R$ {{ estoque.produto.preco }}</td>
+
+                <td>
+                    {% if estoque.current_stock == 0 %}
+                    Sem estoque
+                    {% elif estoque.current_stock <= 20 %} Baixo {% else %} Normal {% endif %} </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>Nenhum produto ativo encontrado no estoque.</p>
+    {% endif %}
+
+    <p>
+        <a href="{% url 'listar_produtos' %}">Voltar para produtos</a>
+    </p>
+</body>
+
+</html>
