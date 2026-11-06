@@ -135,18 +135,32 @@ def historico_movimentacoes(request):
         {"movimentacoes": movimentacoes},
     )
 
-
 @login_required
 @user_passes_test(pode_consultar_estoque)
 def consultar_estoque(request):
+    status = request.GET.get("status", "todos")
+
     estoques = (
         Estoque.objects.select_related("produto")
         .filter(produto__ativo=True)
         .order_by("produto__nome")
     )
 
+    if status == "baixo":
+        estoques = estoques.filter(
+            current_stock__gte=1,
+            current_stock__lte=20,
+        )
+    elif status == "sem_estoque":
+        estoques = estoques.filter(current_stock=0)
+    else:
+        status = "todos"
+
     return render(
         request,
         "estoque/consultar_estoque.html",
-        {"estoques": estoques},
+        {
+            "estoques": estoques,
+            "status": status,
+        },
     )

@@ -10,6 +10,22 @@
 <body>
     <h1>Consulta de Estoque</h1>
 
+    <form method="get">
+        <label for="status">Filtrar por situação:</label>
+
+        <select name="status" id="status">
+            <option value="todos" {% if status == "todos" %}selected{% endif %}>Todos</option>
+
+            <option value="baixo" {% if status == "baixo" %}selected{% endif %}>Estoque baixo</option>
+
+            <option value="sem_estoque" {% if status == "sem_estoque" %}selected{% endif %}>Sem estoque</option>
+        </select>
+
+        <button type="submit">Filtrar</button>
+
+        <a href="{% url 'consultar_estoque' %}">Limpar filtro</a>
+    </form>
+
     {% if estoques %}
     <table border="1">
         <thead>
@@ -29,7 +45,6 @@
                 <td>{{ estoque.produto.nome }}</td>
                 <td>{{ estoque.current_stock }}</td>
                 <td>R$ {{ estoque.produto.preco }}</td>
-
                 <td>
                     {% if estoque.current_stock == 0 %}
                     Sem estoque
@@ -39,12 +54,13 @@
         </tbody>
     </table>
     {% else %}
-    <p>Nenhum produto ativo encontrado no estoque.</p>
+    <p>Nenhum produto encontrado para essa situação.</p>
     {% endif %}
 
     <p>
         <a href="{% url 'listar_produtos' %}">Voltar para produtos</a>
     </p>
+
 </body>
 
 </html>
