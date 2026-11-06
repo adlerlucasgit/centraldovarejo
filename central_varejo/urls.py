@@ -17,4 +17,9 @@ urlpatterns = [
     # Página inicial protegida
     path("", views.inicio, name="inicio"),
     path("produtos/", produtos_views.listar_produtos, name="listar_produtos"),
+    path(
+        "produtos/cadastrar/",
+        produtos_views.cadastrar_produto,
+        name="cadastrar_produto",
+    ),
 ]
