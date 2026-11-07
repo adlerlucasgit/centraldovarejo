@@ -382,3 +382,212 @@ class FiltroHistoricoVendasTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.context["form"].has_error("data_final"))
         self.assertEqual(len(response.context["vendas"]), 3)
+
+
+class CarrinhoVendaTests(TestCase):
+
+    def setUp(self):
+        self.usuario = User.objects.create_user(
+            username="caixa_carrinho",
+            password="senha_teste_123",
+            is_superuser=True,
+        )
+
+        self.produto = Produto.objects.create(
+            codigo="CARRINHO001",
+            nome="Produto para Carrinho",
+            preco=Decimal("25.00"),
+        )
+
+        self.estoque = Estoque.objects.get(produto=self.produto)
+        self.estoque.current_stock = 10
+        self.estoque.save()
+
+        self.client.force_login(self.usuario)
+
+    def preparar_carrinho(self, quantidade):
+        session = self.client.session
+        session["carrinho_venda"] = {
+            str(self.produto.id): quantidade,
+        }
+        session.save()
+
+    def test_acessar_tela_de_iniciar_venda(self):
+        response = self.client.get(reverse("iniciar_venda"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "vendas/iniciar_venda.html")
+
+    def test_adicionar_produto_ao_carrinho(self):
+        response = self.client.post(
+            reverse("iniciar_venda"),
+            {
+                "produto": self.produto.id,
+                "quantidade": 2,
+            },
+        )
+
+        self.assertRedirects(response, reverse("iniciar_venda"))
+
+        carrinho = self.client.session["carrinho_venda"]
+
+        self.assertEqual(carrinho[str(self.produto.id)], 2)
+
+    def test_adicionar_mesmo_produto_soma_quantidades(self):
+        self.preparar_carrinho(2)
+
+        self.client.post(
+            reverse("iniciar_venda"),
+            {
+                "produto": self.produto.id,
+                "quantidade": 3,
+            },
+        )
+
+        carrinho = self.client.session["carrinho_venda"]
+
+        self.assertEqual(carrinho[str(self.produto.id)], 5)
+
+    def test_bloquear_adicao_acima_do_estoque(self):
+        response = self.client.post(
+            reverse("iniciar_venda"),
+            {
+                "produto": self.produto.id,
+                "quantidade": 11,
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotIn(
+            "carrinho_venda",
+            self.client.session,
+        )
+
+    def test_bloquear_adicao_com_quantidade_zero(self):
+        response = self.client.post(
+            reverse("iniciar_venda"),
+            {
+                "produto": self.produto.id,
+                "quantidade": 0,
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotIn(
+            "carrinho_venda",
+            self.client.session,
+        )
+
+    def test_atualizar_quantidade_do_produto(self):
+        self.preparar_carrinho(2)
+
+        response = self.client.post(
+            reverse(
+                "atualizar_quantidade_venda",
+                args=[self.produto.id],
+            ),
+            {"quantidade": 5},
+        )
+
+        self.assertRedirects(response, reverse("iniciar_venda"))
+
+        carrinho = self.client.session["carrinho_venda"]
+
+        self.assertEqual(carrinho[str(self.produto.id)], 5)
+
+    def test_bloquear_atualizacao_com_quantidade_zero(self):
+        self.preparar_carrinho(2)
+
+        self.client.post(
+            reverse(
+                "atualizar_quantidade_venda",
+                args=[self.produto.id],
+            ),
+            {"quantidade": 0},
+        )
+
+        carrinho = self.client.session["carrinho_venda"]
+
+        self.assertEqual(carrinho[str(self.produto.id)], 2)
+
+    def test_bloquear_atualizacao_acima_do_estoque(self):
+        self.preparar_carrinho(2)
+
+        self.client.post(
+            reverse(
+                "atualizar_quantidade_venda",
+                args=[self.produto.id],
+            ),
+            {"quantidade": 11},
+        )
+
+        carrinho = self.client.session["carrinho_venda"]
+
+        self.assertEqual(carrinho[str(self.produto.id)], 2)
+
+    def test_remover_produto_do_carrinho(self):
+        self.preparar_carrinho(2)
+
+        response = self.client.post(
+            reverse(
+                "remover_produto_venda",
+                args=[self.produto.id],
+            )
+        )
+
+        self.assertRedirects(response, reverse("iniciar_venda"))
+
+        carrinho = self.client.session.get("carrinho_venda", {})
+        self.assertEqual(carrinho, {})
+
+    def test_remover_produto_inexistente_nao_altera_carrinho(self):
+        self.preparar_carrinho(2)
+
+        response = self.client.post(
+            reverse(
+                "remover_produto_venda",
+                args=[99999],
+            )
+        )
+
+        self.assertRedirects(response, reverse("iniciar_venda"))
+
+        carrinho = self.client.session["carrinho_venda"]
+
+        self.assertEqual(carrinho[str(self.produto.id)], 2)
+
+    def test_atualizar_quantidade_exige_post(self):
+        self.preparar_carrinho(2)
+
+        response = self.client.get(
+            reverse(
+                "atualizar_quantidade_venda",
+                args=[self.produto.id],
+            )
+        )
+
+        self.assertEqual(response.status_code, 405)
+
+    def test_remover_produto_exige_post(self):
+        self.preparar_carrinho(2)
+
+        response = self.client.get(
+            reverse(
+                "remover_produto_venda",
+                args=[self.produto.id],
+            )
+        )
+
+        self.assertEqual(response.status_code, 405)
+
+    def test_usuario_sem_permissao_nao_inicia_venda(self):
+        usuario = User.objects.create_user(
+            username="usuario_sem_permissao",
+            password="senha_teste_123",
+        )
+
+        self.client.force_login(usuario)
+
+        response = self.client.get(reverse("iniciar_venda"))
+
+        self.assertEqual(response.status_code, 403)
