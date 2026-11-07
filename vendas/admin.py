@@ -35,6 +35,12 @@ class VendaAdmin(admin.ModelAdmin):
 
     inlines = [ItemVendaInline]
 
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
 
 @admin.register(ItemVenda)
 class ItemVendaAdmin(admin.ModelAdmin):
@@ -53,3 +59,9 @@ class ItemVendaAdmin(admin.ModelAdmin):
         "unit_price",
         "subtotal",
     )
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
