@@ -1,91 +1,175 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
+{% extends "base.html" %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Histórico de Vendas - Central do Varejo</title>
-</head>
+{% block title %}Histórico de Vendas | Central do Varejo{% endblock %}
 
-<body>
-    <h1>Histórico de Vendas</h1>
-    <h2>Filtrar vendas</h2>
+{% block page_title %}Histórico de Vendas{% endblock %}
 
-    <form method="GET">
-        <div>
-            {{ form.data_inicial.label_tag }}
-            {{ form.data_inicial }}
-            {{ form.data_inicial.errors }}
+{% block page_subtitle %}
+<p class="text-secondary mb-0">
+    Consulte as vendas realizadas no sistema.
+</p>
+{% endblock %}
+
+{% block content %}
+
+<!-- Filtros -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body p-4">
+
+        <h5 class="fw-semibold mb-3">Filtrar vendas</h5>
+
+        <form method="GET">
+
+            <div class="row g-3">
+
+                <div class="col-md-4">
+                    {{ form.data_inicial.label_tag }}
+                    {{ form.data_inicial }}
+                    {{ form.data_inicial.errors }}
+                </div>
+
+                <div class="col-md-4">
+                    {{ form.data_final.label_tag }}
+                    {{ form.data_final }}
+                    {{ form.data_final.errors }}
+                </div>
+
+                <div class="col-md-4">
+                    {{ form.operador.label_tag }}
+                    {{ form.operador }}
+                    {{ form.operador.errors }}
+                </div>
+
+                <div class="col-md-4">
+                    {{ form.forma_pagamento.label_tag }}
+                    {{ form.forma_pagamento }}
+                    {{ form.forma_pagamento.errors }}
+                </div>
+
+                <div class="col-md-4">
+                    {{ form.numero.label_tag }}
+                    {{ form.numero }}
+                    {{ form.numero.errors }}
+                </div>
+
+            </div>
+
+            <div class="d-flex gap-2 mt-4">
+
+                <button type="submit" class="btn btn-success">
+                    <i class="bi bi-funnel me-1"></i>
+                    Filtrar
+                </button>
+
+                <a href="{% url 'historico_vendas' %}" class="btn btn-outline-secondary">
+                    Limpar filtros
+                </a>
+
+            </div>
+
+        </form>
+
+    </div>
+</div>
+
+<!-- Listagem -->
+<div class="card border-0 shadow-sm">
+
+    <div class="card-body p-0">
+
+        {% if vendas %}
+
+        <div class="table-responsive">
+
+            <table class="table table-hover align-middle mb-0">
+
+                <thead class="table-light">
+                    <tr>
+                        <th class="px-4">Número da venda</th>
+                        <th>Data e horário</th>
+                        <th>Operador</th>
+                        <th>Forma de pagamento</th>
+                        <th>Total</th>
+                        <th class="text-center">Ações</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for venda in vendas %}
+
+                    <tr>
+
+                        <td class="px-4">
+                            #{{ venda.number }}
+                        </td>
+
+                        <td>
+                            {{ venda.date_time|date:"d/m/Y H:i" }}
+                        </td>
+
+                        <td>
+                            {{ venda.user.username }}
+                        </td>
+
+                        <td>
+                            {{ venda.get_payment_method_display }}
+                        </td>
+
+                        <td class="fw-semibold">
+                            R$ {{ venda.total|floatformat:2 }}
+                        </td>
+
+                        <td class="text-center">
+
+                            <a href="{% url 'detalhes_venda' venda.id %}" class="btn btn-sm btn-outline-success">
+
+                                <i class="bi bi-eye me-1"></i>
+                                Ver detalhes
+
+                            </a>
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
         </div>
 
-        <div>
-            {{ form.data_final.label_tag }}
-            {{ form.data_final }}
-            {{ form.data_final.errors }}
+        {% else %}
+
+        <div class="text-center py-5">
+
+            <i class="bi bi-receipt text-secondary fs-1"></i>
+
+            <h5 class="mt-3">
+                Nenhuma venda encontrada
+            </h5>
+
+            <p class="text-secondary mb-0">
+                Não existem vendas para os filtros selecionados.
+            </p>
+
         </div>
 
-        <div>
-            {{ form.operador.label_tag }}
-            {{ form.operador }}
-            {{ form.operador.errors }}
-        </div>
+        {% endif %}
 
-        <div>
-            {{ form.forma_pagamento.label_tag }}
-            {{ form.forma_pagamento }}
-            {{ form.forma_pagamento.errors }}
-        </div>
+    </div>
 
-        <div>
-            {{ form.numero.label_tag }}
-            {{ form.numero }}
-            {{ form.numero.errors }}
-        </div>
+</div>
 
-        <button type="submit">Filtrar</button>
+<div class="mt-4">
 
-        <a href="{% url 'historico_vendas' %}">Limpar filtros</a>
-    </form>
+    <a href="{% url 'inicio' %}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>
+        Voltar ao início
+    </a>
 
-    <p>Consulte as vendas realizadas no sistema.</p>
+</div>
 
-    {% if vendas %}
-    <table border="1" cellpadding="8">
-        <thead>
-            <tr>
-                <th>Número da venda</th>
-                <th>Data e horário</th>
-                <th>Operador</th>
-                <th>Forma de pagamento</th>
-                <th>Total</th>
-                <th>Ações</th>
-            </tr>
-        </thead>
-
-        <tbody>
-            {% for venda in vendas %}
-            <tr>
-                <td>{{ venda.number }}</td>
-                <td>{{ venda.date_time|date:"d/m/Y H:i" }}</td>
-                <td>{{ venda.user.username }}</td>
-                <td>{{ venda.get_payment_method_display }}</td>
-                <td>R$ {{ venda.total|floatformat:2 }}</td>
-                <td>
-                    <a href="{% url 'detalhes_venda' venda.id %}">
-                        Ver detalhes
-                    </a>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    {% else %}
-    <p>Nenhuma venda encontrada.</p>
-    {% endif %}
-
-    <p>
-        <a href="{% url 'inicio' %}">Voltar ao início</a>
-    </p>
-</body>
-
-</html>
+{% endblock %}

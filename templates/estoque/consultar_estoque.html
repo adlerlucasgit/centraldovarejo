@@ -1,66 +1,145 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
+{% extends "base.html" %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Consulta de Estoque - Central do Varejo</title>
-</head>
+{% block title %}Consulta de Estoque | Central do Varejo{% endblock %}
 
-<body>
-    <h1>Consulta de Estoque</h1>
+{% block page_title %}Consulta de Estoque{% endblock %}
 
-    <form method="get">
-        <label for="status">Filtrar por situação:</label>
+{% block page_subtitle %}
+<p class="text-secondary mb-0">
+    Consulte os produtos e acompanhe a situação do estoque.
+</p>
+{% endblock %}
 
-        <select name="status" id="status">
-            <option value="todos" {% if status == "todos" %}selected{% endif %}>Todos</option>
+{% block content %}
 
-            <option value="baixo" {% if status == "baixo" %}selected{% endif %}>Estoque baixo</option>
+<!-- Filtros -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body p-4">
 
-            <option value="sem_estoque" {% if status == "sem_estoque" %}selected{% endif %}>Sem estoque</option>
-        </select>
+        <form method="get" class="row align-items-end g-3">
 
-        <button type="submit">Filtrar</button>
+            <div class="col-md-5">
+                <label for="status" class="form-label fw-semibold">
+                    Filtrar por situação
+                </label>
 
-        <a href="{% url 'consultar_estoque' %}">Limpar filtro</a>
-    </form>
+                <select name="status" id="status" class="form-select">
+                    <option value="todos" {% if status == "todos" %}selected{% endif %}>
+                        Todos
+                    </option>
 
-    {% if estoques %}
-    <table border="1">
-        <thead>
-            <tr>
-                <th>Código</th>
-                <th>Produto</th>
-                <th>Quantidade</th>
-                <th>Preço de venda</th>
-                <th>Status</th>
-            </tr>
-        </thead>
+                    <option value="baixo" {% if status == "baixo" %}selected{% endif %}>
+                        Estoque baixo
+                    </option>
 
-        <tbody>
-            {% for estoque in estoques %}
-            <tr>
-                <td>{{ estoque.produto.codigo }}</td>
-                <td>{{ estoque.produto.nome }}</td>
-                <td>{{ estoque.current_stock }}</td>
-                <td>R$ {{ estoque.produto.preco }}</td>
-                <td>
-                    {% if estoque.current_stock == 0 %}
-                    Sem estoque
-                    {% elif estoque.current_stock <= 20 %} Baixo {% else %} Normal {% endif %} </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    {% else %}
-    <p>Nenhum produto encontrado para essa situação.</p>
-    {% endif %}
+                    <option value="sem_estoque" {% if status == "sem_estoque" %}selected{% endif %}>
+                        Sem estoque
+                    </option>
+                </select>
+            </div>
 
-    <p>
-        <a href="{% url 'listar_produtos' %}">Voltar para produtos</a>
-    </p>
+            <div class="col-md-auto">
 
-</body>
+                <button type="submit" class="btn btn-success">
+                    <i class="bi bi-funnel me-1"></i>
+                    Filtrar
+                </button>
 
-</html>
+                <a href="{% url 'consultar_estoque' %}" class="btn btn-outline-secondary">
+                    Limpar filtro
+                </a>
+
+            </div>
+
+        </form>
+
+    </div>
+</div>
+
+<!-- Tabela de estoque -->
+<div class="card border-0 shadow-sm">
+    <div class="card-body">
+
+        <div class="table-responsive">
+
+            <table class="table table-hover align-middle mb-0">
+
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Produto</th>
+                        <th>Quantidade</th>
+                        <th>Preço de venda</th>
+                        <th>Situação</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for estoque in estoques %}
+                    <tr>
+
+                        <td>{{ estoque.produto.codigo }}</td>
+
+                        <td class="fw-semibold">
+                            {{ estoque.produto.nome }}
+                        </td>
+
+                        <td>
+                            {{ estoque.current_stock }}
+                        </td>
+
+                        <td>
+                            R$ {{ estoque.produto.preco|floatformat:2 }}
+                        </td>
+
+                        <td>
+
+                            {% if estoque.current_stock == 0 %}
+
+                            <span class="badge text-bg-danger">
+                                Sem estoque
+                            </span>
+
+                            {% elif estoque.current_stock <= 20 %} <span class="badge text-bg-warning">
+                                Baixo
+                                </span>
+
+                                {% else %}
+
+                                <span class="badge text-bg-success">
+                                    Normal
+                                </span>
+
+                                {% endif %}
+
+                        </td>
+
+                    </tr>
+
+                    {% empty %}
+
+                    <tr>
+                        <td colspan="5" class="text-center py-5">
+
+                            <i class="bi bi-box-seam fs-2 text-secondary"></i>
+
+                            <p class="text-secondary mt-2 mb-0">
+                                Nenhum produto encontrado para essa situação.
+                            </p>
+
+                        </td>
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

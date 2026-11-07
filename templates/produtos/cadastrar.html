@@ -1,26 +1,41 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
+{% extends "base.html" %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cadastrar Produto - Central do Varejo</title>
-</head>
+{% block title %}Cadastrar Produto | Central do Varejo{% endblock %}
 
-<body>
-    <h1>Cadastrar Produto</h1>
+{% block page_title %}Cadastrar Produto{% endblock %}
 
-    <form method="POST">
-        {% csrf_token %}
+{% block page_subtitle %}
+<p class="text-secondary mb-0">
+    Preencha os dados para cadastrar um novo produto.
+</p>
+{% endblock %}
 
-        {{ form.as_p }}
+{% block content %}
 
-        <button type="submit">Salvar Produto</button>
-    </form>
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-4">
 
-    <p>
-        <a href="{% url 'listar_produtos' %}">Voltar para produtos</a>
-    </p>
-</body>
+        <form method="POST">
+            {% csrf_token %}
 
-</html>
+            {{ form.as_p }}
+
+            <div class="d-flex flex-wrap gap-2 mt-4">
+
+                <button type="submit" class="btn btn-success">
+                    <i class="bi bi-check-lg me-1"></i>
+                    Salvar produto
+                </button>
+
+                <a href="{% url 'listar_produtos' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-1"></i>
+                    Voltar para produtos
+                </a>
+
+            </div>
+        </form>
+
+    </div>
+</div>
+
+{% endblock %}

@@ -1,62 +1,102 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
+{% extends "base.html" %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Produtos | Central do Varejo</title>
-</head>
+{% block title %}Produtos | Central do Varejo{% endblock %}
 
-<body>
-    <h1>Produtos cadastrados</h1>
+{% block page_title %}Produtos{% endblock %}
 
-    {% if produtos %}
-    <table border="1">
-        <thead>
-            <tr>
-                <th>Código</th>
-                <th>Nome</th>
-                <th>Preço</th>
-                <th>Ações</th>
-            </tr>
-        </thead>
+{% block page_subtitle %}
+<p class="text-secondary mb-0">
+    Consulte e gerencie os produtos cadastrados no sistema.
+</p>
+{% endblock %}
 
-        <tbody>
-            {% for produto in produtos %}
-            <tr>
-                <td>{{ produto.codigo }}</td>
-                <td>{{ produto.nome }}</td>
-                <td>R$ {{ produto.preco|floatformat:2 }}</td>
+{% block page_actions %}
+{% if perms.produtos.add_produto %}
+<a href="{% url 'cadastrar_produto' %}" class="btn btn-success">
+    <i class="bi bi-plus-lg me-1"></i>
+    Cadastrar produto
+</a>
+{% endif %}
+{% endblock %}
 
-                <td>
-                    {% if perms.produtos.change_produto %}
-                    <a href="{% url 'editar_produto' produto.id %}">
-                        Editar
-                    </a>
+{% block content %}
 
-                    <form method="POST" action="{% url 'desativar_produto' produto.id %}" style="display: inline;"
-                        onsubmit="return confirm('Deseja realmente desativar este produto?');">
+<div class="card border-0 shadow-sm">
+    <div class="card-body">
 
-                        {% csrf_token %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
 
-                        <button type="submit">Desativar</button>
-                    </form>
-                    {% else %}
-                    <span>Sem ações disponíveis</span>
-                    {% endif %}
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+                <thead>
+                    <tr>
+                        <th scope="col">Código</th>
+                        <th scope="col">Nome</th>
+                        <th scope="col">Preço</th>
+                        <th scope="col" class="text-end">Ações</th>
+                    </tr>
+                </thead>
 
-    {% else %}
-    <p>Nenhum produto ativo cadastrado.</p>
-    {% endif %}
+                <tbody>
+                    {% for produto in produtos %}
+                    <tr>
+                        <td>{{ produto.codigo }}</td>
 
-    <p>
-        <a href="{% url 'inicio' %}">Voltar ao início</a>
-    </p>
-</body>
+                        <td class="fw-semibold">
+                            {{ produto.nome }}
+                        </td>
 
-</html>
+                        <td>
+                            R$ {{ produto.preco|floatformat:2 }}
+                        </td>
+
+                        <td class="text-end">
+                            <div class="d-inline-flex align-items-center gap-2">
+
+                                {% if perms.produtos.change_produto %}
+                                <a href="{% url 'editar_produto' produto.id %}" class="btn btn-sm btn-outline-primary"
+                                    title="Editar produto">
+                                    <i class="bi bi-pencil"></i>
+                                    Editar
+                                </a>
+
+                                <form method="post" action="{% url 'desativar_produto' produto.id %}"
+                                    onsubmit="return confirm('Deseja realmente desativar este produto?');">
+
+                                    {% csrf_token %}
+
+                                    <button type="submit" class="btn btn-sm btn-outline-danger"
+                                        title="Desativar produto">
+                                        <i class="bi bi-trash"></i>
+                                        Desativar
+                                    </button>
+                                </form>
+                                {% else %}
+                                <span class="text-secondary small">
+                                    Sem ações disponíveis
+                                </span>
+                                {% endif %}
+
+                            </div>
+                        </td>
+                    </tr>
+
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center py-5">
+                            <i class="bi bi-box-seam fs-2 text-secondary"></i>
+
+                            <p class="text-secondary mt-2 mb-0">
+                                Nenhum produto ativo cadastrado.
+                            </p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+
+            </table>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

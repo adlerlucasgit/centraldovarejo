@@ -1,28 +1,41 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
+{% extends "base.html" %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editar Produto - Central do Varejo</title>
-</head>
+{% block title %}Editar Produto | Central do Varejo{% endblock %}
 
-<body>
-    <h1>Editar Produto</h1>
+{% block page_title %}Editar Produto{% endblock %}
 
-    <p>Alterando: {{ produto.nome }}</p>
+{% block page_subtitle %}
+<p class="text-secondary mb-0">
+    Atualize as informações do produto cadastrado.
+</p>
+{% endblock %}
 
-    <form method="POST">
-        {% csrf_token %}
+{% block content %}
 
-        {{ form.as_p }}
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-4">
 
-        <button type="submit">Salvar Alterações</button>
-    </form>
+        <form method="POST">
+            {% csrf_token %}
 
-    <p>
-        <a href="{% url 'listar_produtos' %}">Cancelar e voltar</a>
-    </p>
-</body>
+            {{ form.as_p }}
 
-</html>
+            <div class="d-flex flex-wrap gap-2 mt-4">
+
+                <button type="submit" class="btn btn-success">
+                    <i class="bi bi-check-lg me-1"></i>
+                    Salvar alterações
+                </button>
+
+                <a href="{% url 'listar_produtos' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-1"></i>
+                    Voltar para produtos
+                </a>
+
+            </div>
+        </form>
+
+    </div>
+</div>
+
+{% endblock %}

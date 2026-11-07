@@ -1,32 +1,36 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
+{% extends "base.html" %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registrar Entrada - Central do Varejo</title>
-</head>
+{% block title %}Registrar Entrada | Central do Varejo{% endblock %}
 
-<body>
-    <h1>Registrar Entrada de Estoque</h1>
+{% block page_title %}Registrar Entrada de Estoque{% endblock %}
 
-    {% if messages %}
-    {% for message in messages %}
-    <p>{{ message }}</p>
-    {% endfor %}
-    {% endif %}
+{% block page_subtitle %}
+<p class="text-secondary mb-0">
+    Registre a entrada de produtos no estoque.
+</p>
+{% endblock %}
 
-    <form method="POST">
-        {% csrf_token %}
+{% block content %}
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-4">
 
-        {{ form.as_p }}
+        <form method="POST">
+            {% csrf_token %}
 
-        <button type="submit">Registrar Entrada</button>
-    </form>
+            {{ form.as_p }}
 
-    <p>
-        <a href="{% url 'listar_produtos' %}">Voltar para produtos</a>
-    </p>
-</body>
+            <div class="d-flex gap-2 mt-4">
+                <button type="submit" class="btn btn-success">
+                    <i class="bi bi-check-circle me-1"></i>
+                    Registrar entrada
+                </button>
 
-</html>
+                <a href="{% url 'consultar_estoque' %}" class="btn btn-outline-secondary">
+                    Cancelar
+                </a>
+            </div>
+        </form>
+
+    </div>
+</div>
+{% endblock %}
