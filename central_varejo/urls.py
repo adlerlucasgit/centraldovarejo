@@ -60,4 +60,14 @@ urlpatterns = [
         vendas_views.iniciar_venda,
         name="iniciar_venda",
     ),
+    path(
+        "vendas/carrinho/atualizar/<int:produto_id>/",
+        vendas_views.atualizar_quantidade,
+        name="atualizar_quantidade_venda",
+    ),
+    path(
+        "vendas/carrinho/remover/<int:produto_id>/",
+        vendas_views.remover_produto,
+        name="remover_produto_venda",
+    ),
 ]

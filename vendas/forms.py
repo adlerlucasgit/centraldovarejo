@@ -19,6 +19,11 @@ class ItemCarrinhoForm(forms.Form):
         label="Quantidade",
     )
 
+class AtualizarQuantidadeForm(forms.Form):
+    quantidade = forms.IntegerField(
+        min_value=1,
+        label="Nova quantidade",
+    )
 
 class FinalizarVendaForm(forms.Form):
     forma_pagamento = forms.ChoiceField(

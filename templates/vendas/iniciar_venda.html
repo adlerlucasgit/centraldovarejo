@@ -9,6 +9,11 @@
 
 <body>
     <h1>Registrar Nova Venda</h1>
+    {% if messages %}
+    {% for message in messages %}
+    <p>{{ message }}</p>
+    {% endfor %}
+    {% endif %}
 
     <h2>Adicionar produto</h2>
 
@@ -25,26 +30,60 @@
     <h2>Carrinho de compras</h2>
 
     {% if itens_carrinho %}
-    <table border="1" cellpadding="8">
+    <table border="1" cellpadding="8" cellspacing="0">
         <thead>
             <tr>
                 <th>Produto</th>
                 <th>Quantidade</th>
                 <th>Preço unitário</th>
                 <th>Subtotal</th>
+                <th>Alterar quantidade</th>
+                <th>Ações</th>
             </tr>
         </thead>
-
         <tbody>
             {% for item in itens_carrinho %}
             <tr>
                 <td>{{ item.produto.nome }}</td>
-                <td>{{ item.quantidade }}</td>
-                <td>R$ {{ item.produto.preco|floatformat:2 }}</td>
-                <td>R$ {{ item.subtotal|floatformat:2 }}</td>
+        
+                <td>
+                    {{ item.quantidade }}
+                </td>
+        
+                <td>
+                    R$ {{ item.produto.preco|floatformat:2 }}
+                </td>
+        
+                <td>
+                    R$ {{ item.subtotal|floatformat:2 }}
+                </td>
+        
+                <td>
+                    <form method="post" action="{% url 'atualizar_quantidade_venda' item.produto.id %}">
+                        {% csrf_token %}
+        
+                        <input type="number" name="quantidade" min="1" max="{{ item.produto.estoque.current_stock }}"
+                            value="{{ item.quantidade }}" required>
+        
+                        <button type="submit">
+                            Atualizar
+                        </button>
+                    </form>
+                </td>
+        
+                <td>
+                    <form method="post" action="{% url 'remover_produto_venda' item.produto.id %}">
+                        {% csrf_token %}
+        
+                        <button type="submit" onclick="return confirm('Deseja remover este produto do carrinho?')">
+                            Remover
+                        </button>
+                    </form>
+                </td>
             </tr>
             {% endfor %}
         </tbody>
+
     </table>
 
     <h3>

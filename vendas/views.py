@@ -1,10 +1,11 @@
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.http import require_POST
 
 from produtos.models import Produto
-from .forms import ItemCarrinhoForm
-
+from .forms import ItemCarrinhoForm, AtualizarQuantidadeForm
 
 def eh_operador_venda(user):
     return (
@@ -81,3 +82,68 @@ def iniciar_venda(request):
             "total_carrinho": total_carrinho,
         },
     )
+
+
+@login_required
+@require_POST
+def atualizar_quantidade(request, produto_id):
+    if not eh_operador_venda(request.user):
+        raise PermissionDenied
+
+    carrinho = request.session.get("carrinho_venda", {})
+    chave_produto = str(produto_id)
+
+    if chave_produto not in carrinho:
+        messages.error(request, "Produto não encontrado no carrinho.")
+        return redirect("iniciar_venda")
+
+    form = AtualizarQuantidadeForm(request.POST)
+
+    if not form.is_valid():
+        messages.error(request, "Informe uma quantidade válida.")
+        return redirect("iniciar_venda")
+
+    produto = get_object_or_404(
+        Produto.objects.select_related("estoque"),
+        id=produto_id,
+        ativo=True,
+    )
+
+    quantidade = form.cleaned_data["quantidade"]
+    estoque = produto.estoque
+
+    if quantidade > estoque.current_stock:
+        messages.error(
+            request,
+            (
+                f"Estoque insuficiente para {produto.nome}. "
+                f"Disponível: {estoque.current_stock}."
+            ),
+        )
+        return redirect("iniciar_venda")
+
+    carrinho[chave_produto] = quantidade
+    request.session["carrinho_venda"] = carrinho
+
+    messages.success(request, "Quantidade atualizada com sucesso.")
+
+    return redirect("iniciar_venda")
+
+@login_required
+@require_POST
+def remover_produto(request, produto_id):
+    if not eh_operador_venda(request.user):
+        raise PermissionDenied
+
+    carrinho = request.session.get("carrinho_venda", {})
+    chave_produto = str(produto_id)
+
+    if chave_produto in carrinho:
+        del carrinho[chave_produto]
+        request.session["carrinho_venda"] = carrinho
+
+        messages.success(request, "Produto removido do carrinho.")
+    else:
+        messages.error(request, "Produto não encontrado no carrinho.")
+
+    return redirect("iniciar_venda")
