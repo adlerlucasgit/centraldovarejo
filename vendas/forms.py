@@ -25,8 +25,13 @@ class AtualizarQuantidadeForm(forms.Form):
         label="Nova quantidade",
     )
 
+
 class FinalizarVendaForm(forms.Form):
     forma_pagamento = forms.ChoiceField(
-        choices=Venda.FormaPagamento.choices,
+        choices=[
+            ("", "Selecione uma forma de pagamento"),
+            *Venda.FormaPagamento.choices,
+        ],
         label="Forma de pagamento",
+        required=True,
     )

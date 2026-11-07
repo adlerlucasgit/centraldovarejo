@@ -89,6 +89,20 @@
     <h3>
         Total: R$ {{ total_carrinho|floatformat:2 }}
     </h3>
+    <hr>
+
+    <h3>Finalizar venda</h3>
+
+    <form method="post" action="{% url 'finalizar_venda' %}">
+        {% csrf_token %}
+
+        {{ finalizar_form.as_p }}
+
+        <button type="submit" onclick="return confirm('Deseja realmente finalizar esta venda?')">
+            Confirmar venda
+        </button>
+    </form>
+
     {% else %}
     <p>O carrinho está vazio.</p>
     {% endif %}

@@ -1,11 +1,18 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.core.exceptions import PermissionDenied
+from django.core.exceptions import PermissionDenied, ValidationError
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
 from produtos.models import Produto
-from .forms import ItemCarrinhoForm, AtualizarQuantidadeForm
+
+from .forms import (
+    ItemCarrinhoForm,
+    AtualizarQuantidadeForm,
+    FinalizarVendaForm,
+)
+
+from .services import finalizar_venda as executar_finalizacao
 
 def eh_operador_venda(user):
     return (
@@ -30,7 +37,6 @@ def iniciar_venda(request):
 
             estoque = produto.estoque
             quantidade_atual = int(carrinho.get(str(produto.id), 0))
-
             quantidade_total = quantidade_atual + quantidade
 
             if quantidade_total > estoque.current_stock:
@@ -78,11 +84,11 @@ def iniciar_venda(request):
         "vendas/iniciar_venda.html",
         {
             "form": form,
+            "finalizar_form": FinalizarVendaForm(),
             "itens_carrinho": itens_carrinho,
             "total_carrinho": total_carrinho,
         },
     )
-
 
 @login_required
 @require_POST
@@ -145,5 +151,55 @@ def remover_produto(request, produto_id):
         messages.success(request, "Produto removido do carrinho.")
     else:
         messages.error(request, "Produto não encontrado no carrinho.")
+
+    return redirect("iniciar_venda")
+
+@login_required
+@require_POST
+def finalizar_venda(request):
+    if not eh_operador_venda(request.user):
+        raise PermissionDenied
+
+    carrinho = request.session.get("carrinho_venda", {})
+
+    if not carrinho:
+        messages.error(
+            request, "Não é possível finalizar uma venda com o carrinho vazio."
+        )
+        return redirect("iniciar_venda")
+
+    form = FinalizarVendaForm(request.POST)
+
+    if not form.is_valid():
+        messages.error(request, "Selecione uma forma de pagamento válida.")
+        return redirect("iniciar_venda")
+
+    itens = [
+        {
+            "produto_id": produto_id,
+            "quantidade": quantidade,
+        }
+        for produto_id, quantidade in carrinho.items()
+    ]
+
+    try:
+        venda = executar_finalizacao(
+            user=request.user,
+            itens=itens,
+            payment_method=form.cleaned_data["forma_pagamento"],
+        )
+    except ValidationError as erro:
+        messages.error(request, " ".join(erro.messages))
+        return redirect("iniciar_venda")
+
+    request.session.pop("carrinho_venda", None)
+
+    messages.success(
+        request,
+        (
+            f"Venda {venda.number} finalizada com sucesso! "
+            f"Total: R$ {venda.total:.2f}."
+        ),
+    )
 
     return redirect("iniciar_venda")

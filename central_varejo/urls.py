@@ -70,4 +70,9 @@ urlpatterns = [
         vendas_views.remover_produto,
         name="remover_produto_venda",
     ),
+    path(
+        "vendas/finalizar/",
+        vendas_views.finalizar_venda,
+        name="finalizar_venda",
+    ),
 ]
