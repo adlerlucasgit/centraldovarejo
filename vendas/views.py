@@ -6,7 +6,10 @@ from .forms import ItemCarrinhoForm
 
 
 def eh_operador_venda(user):
-    return user.groups.filter(name__in=["Administrador", "Caixa"]).exists()
+    return (
+        user.is_superuser
+        or user.groups.filter(name__in=["Administrador", "Caixa"]).exists()
+    )
 
 
 @login_required

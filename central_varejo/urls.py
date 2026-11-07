@@ -3,6 +3,7 @@ from django.urls import path
 from django.contrib.auth import views as auth_views
 from produtos import views as produtos_views
 from estoque import views as estoque_views
+from vendas import views as vendas_views
 
 from . import views
 
@@ -52,5 +53,11 @@ urlpatterns = [
         "estoque/",
         estoque_views.consultar_estoque,
         name="consultar_estoque",
+    ),
+    # Vendas
+    path(
+        "vendas/nova/",
+        vendas_views.iniciar_venda,
+        name="iniciar_venda",
     ),
 ]

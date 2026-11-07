@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nova Venda - Central do Varejo</title>
+</head>
+
+<body>
+    <h1>Registrar Nova Venda</h1>
+
+    <p>Selecione um produto e informe a quantidade desejada.</p>
+
+    <form method="post">
+        {% csrf_token %}
+
+        {{ form.as_p }}
+
+        <button type="submit">Adicionar ao carrinho</button>
+    </form>
+
+    <p>
+        <a href="{% url 'inicio' %}">Voltar ao início</a>
+    </p>
+</body>
+
+</html>
