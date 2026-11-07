@@ -10,7 +10,7 @@
 <body>
     <h1>Registrar Nova Venda</h1>
 
-    <p>Selecione um produto e informe a quantidade desejada.</p>
+    <h2>Adicionar produto</h2>
 
     <form method="post">
         {% csrf_token %}
@@ -20,9 +20,46 @@
         <button type="submit">Adicionar ao carrinho</button>
     </form>
 
+    <hr>
+
+    <h2>Carrinho de compras</h2>
+
+    {% if itens_carrinho %}
+    <table border="1" cellpadding="8">
+        <thead>
+            <tr>
+                <th>Produto</th>
+                <th>Quantidade</th>
+                <th>Preço unitário</th>
+                <th>Subtotal</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for item in itens_carrinho %}
+            <tr>
+                <td>{{ item.produto.nome }}</td>
+                <td>{{ item.quantidade }}</td>
+                <td>R$ {{ item.produto.preco|floatformat:2 }}</td>
+                <td>R$ {{ item.subtotal|floatformat:2 }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h3>
+        Total: R$ {{ total_carrinho|floatformat:2 }}
+    </h3>
+    {% else %}
+    <p>O carrinho está vazio.</p>
+    {% endif %}
+
+    <hr>
+
     <p>
         <a href="{% url 'inicio' %}">Voltar ao início</a>
     </p>
+
 </body>
 
 </html>
