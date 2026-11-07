@@ -1,5 +1,5 @@
 from django.contrib import admin
-from django.urls import path
+from django.urls import include, path
 from django.contrib.auth import views as auth_views
 from produtos import views as produtos_views
 from estoque import views as estoque_views
@@ -85,4 +85,5 @@ urlpatterns = [
         vendas_views.detalhes_venda,
         name="detalhes_venda",
     ),
+    path("relatorios/", include("relatorios.urls")),
 ]
