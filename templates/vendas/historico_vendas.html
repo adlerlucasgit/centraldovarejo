@@ -9,6 +9,43 @@
 
 <body>
     <h1>Histórico de Vendas</h1>
+    <h2>Filtrar vendas</h2>
+
+    <form method="GET">
+        <div>
+            {{ form.data_inicial.label_tag }}
+            {{ form.data_inicial }}
+            {{ form.data_inicial.errors }}
+        </div>
+
+        <div>
+            {{ form.data_final.label_tag }}
+            {{ form.data_final }}
+            {{ form.data_final.errors }}
+        </div>
+
+        <div>
+            {{ form.operador.label_tag }}
+            {{ form.operador }}
+            {{ form.operador.errors }}
+        </div>
+
+        <div>
+            {{ form.forma_pagamento.label_tag }}
+            {{ form.forma_pagamento }}
+            {{ form.forma_pagamento.errors }}
+        </div>
+
+        <div>
+            {{ form.numero.label_tag }}
+            {{ form.numero }}
+            {{ form.numero.errors }}
+        </div>
+
+        <button type="submit">Filtrar</button>
+
+        <a href="{% url 'historico_vendas' %}">Limpar filtros</a>
+    </form>
 
     <p>Consulte as vendas realizadas no sistema.</p>
 

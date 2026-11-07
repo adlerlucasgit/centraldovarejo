@@ -1,13 +1,15 @@
+from datetime import timedelta
 from decimal import Decimal
 
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
 from django.test import TestCase
 from django.urls import reverse
+from django.utils import timezone
 
 from estoque.models import Estoque, MovimentacaoEstoque
 from produtos.models import Produto
 from .models import Venda, ItemVenda
-from django.contrib.auth.models import Group
 
 User = get_user_model()
 
@@ -245,3 +247,138 @@ class HistoricoVendasTests(TestCase):
             self.venda_caixa,
         )
         self.assertEqual(len(response.context["itens"]), 1)
+
+
+class FiltroHistoricoVendasTests(TestCase):
+
+    def setUp(self):
+        self.admin = User.objects.create_user(
+            username="admin_filtros",
+            password="senha_teste_123",
+            is_superuser=True,
+        )
+
+        grupo_caixa = Group.objects.create(name="Caixa")
+
+        self.caixa = User.objects.create_user(
+            username="caixa_filtros",
+            password="senha_teste_123",
+        )
+        self.caixa.groups.add(grupo_caixa)
+
+        self.outro_caixa = User.objects.create_user(
+            username="outro_filtros",
+            password="senha_teste_123",
+        )
+        self.outro_caixa.groups.add(grupo_caixa)
+
+        self.hoje = timezone.localdate()
+
+        self.venda1 = Venda.objects.create(
+            number="FILTRO-001",
+            user=self.caixa,
+            total=Decimal("50.00"),
+            payment_method="DINHEIRO",
+        )
+
+        self.venda2 = Venda.objects.create(
+            number="FILTRO-002",
+            user=self.caixa,
+            total=Decimal("30.00"),
+            payment_method="PIX",
+        )
+
+        self.venda3 = Venda.objects.create(
+            number="FILTRO-003",
+            user=self.outro_caixa,
+            total=Decimal("20.00"),
+            payment_method="CARTAO",
+        )
+
+        Venda.objects.filter(id=self.venda1.id).update(
+            date_time=timezone.now() - timedelta(days=2)
+        )
+
+        Venda.objects.filter(id=self.venda2.id).update(
+            date_time=timezone.now() - timedelta(days=1)
+        )
+
+        Venda.objects.filter(id=self.venda3.id).update(date_time=timezone.now())
+
+        self.client.force_login(self.admin)
+
+    def test_filtrar_por_data_inicial_e_final(self):
+        response = self.client.get(
+            reverse("historico_vendas"),
+            {
+                "data_inicial": (self.hoje - timedelta(days=1)).isoformat(),
+                "data_final": self.hoje.isoformat(),
+            },
+        )
+
+        vendas = list(response.context["vendas"])
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(vendas), 2)
+        self.assertNotIn(self.venda1, vendas)
+
+    def test_filtrar_por_operador(self):
+        response = self.client.get(
+            reverse("historico_vendas"),
+            {"operador": self.caixa.id},
+        )
+
+        vendas = list(response.context["vendas"])
+
+        self.assertEqual(len(vendas), 2)
+        self.assertIn(self.venda1, vendas)
+        self.assertIn(self.venda2, vendas)
+        self.assertNotIn(self.venda3, vendas)
+
+    def test_filtrar_por_forma_de_pagamento(self):
+        response = self.client.get(
+            reverse("historico_vendas"),
+            {"forma_pagamento": "PIX"},
+        )
+
+        vendas = list(response.context["vendas"])
+
+        self.assertEqual(len(vendas), 1)
+        self.assertEqual(vendas[0], self.venda2)
+
+    def test_pesquisar_por_parte_do_numero(self):
+        response = self.client.get(
+            reverse("historico_vendas"),
+            {"numero": "FILTRO-00"},
+        )
+
+        vendas = list(response.context["vendas"])
+
+        self.assertEqual(len(vendas), 3)
+
+    def test_combinar_filtros(self):
+        response = self.client.get(
+            reverse("historico_vendas"),
+            {
+                "operador": self.caixa.id,
+                "forma_pagamento": "PIX",
+            },
+        )
+
+        vendas = list(response.context["vendas"])
+
+        self.assertEqual(len(vendas), 1)
+        self.assertEqual(vendas[0], self.venda2)
+
+    def test_rejeitar_periodo_com_datas_invertidas(self):
+        response = self.client.get(
+            reverse("historico_vendas"),
+            {
+                "data_inicial": self.hoje.isoformat(),
+                "data_final": (self.hoje - timedelta(days=1)).isoformat(),
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.context["form"].has_error("data_final"))
+        self.assertEqual(len(response.context["vendas"]), 3)

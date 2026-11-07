@@ -6,12 +6,11 @@ from django.views.decorators.http import require_POST
 from produtos.models import Produto
 from .models import Venda
 
-from produtos.models import Produto
-
 from .forms import (
     ItemCarrinhoForm,
     AtualizarQuantidadeForm,
     FinalizarVendaForm,
+    FiltroHistoricoVendasForm,
 )
 
 from .services import finalizar_venda as executar_finalizacao
@@ -223,11 +222,36 @@ def finalizar_venda(request):
 def historico_vendas(request):
     vendas = vendas_visiveis_para(request.user)
 
+    form = FiltroHistoricoVendasForm(request.GET or None)
+
+    if form.is_valid():
+        data_inicial = form.cleaned_data.get("data_inicial")
+        data_final = form.cleaned_data.get("data_final")
+        operador = form.cleaned_data.get("operador")
+        forma_pagamento = form.cleaned_data.get("forma_pagamento")
+        numero = form.cleaned_data.get("numero")
+
+        if data_inicial:
+            vendas = vendas.filter(date_time__date__gte=data_inicial)
+
+        if data_final:
+            vendas = vendas.filter(date_time__date__lte=data_final)
+
+        if operador:
+            vendas = vendas.filter(user=operador)
+
+        if forma_pagamento:
+            vendas = vendas.filter(payment_method=forma_pagamento)
+
+        if numero:
+            vendas = vendas.filter(number__icontains=numero)
+
     return render(
         request,
         "vendas/historico_vendas.html",
         {
             "vendas": vendas,
+            "form": form,
         },
     )
 
