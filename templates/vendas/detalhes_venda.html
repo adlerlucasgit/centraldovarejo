@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalhes da Venda - Central do Varejo</title>
+</head>
+
+<body>
+    <h1>Detalhes da Venda</h1>
+
+    <h2>Venda {{ venda.number }}</h2>
+
+    <p>
+        <strong>Data e horário:</strong>
+        {{ venda.date_time|date:"d/m/Y H:i" }}
+    </p>
+
+    <p>
+        <strong>Operador:</strong>
+        {{ venda.user.username }}
+    </p>
+
+    <p>
+        <strong>Forma de pagamento:</strong>
+        {{ venda.get_payment_method_display }}
+    </p>
+
+    <hr>
+
+    <h2>Produtos da venda</h2>
+
+    {% if itens %}
+    <table border="1" cellpadding="8">
+        <thead>
+            <tr>
+                <th>Produto</th>
+                <th>Código</th>
+                <th>Quantidade</th>
+                <th>Preço unitário</th>
+                <th>Subtotal</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for item in itens %}
+            <tr>
+                <td>{{ item.product.nome }}</td>
+                <td>{{ item.product.codigo }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>R$ {{ item.unit_price|floatformat:2 }}</td>
+                <td>R$ {{ item.subtotal|floatformat:2 }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>Esta venda não possui itens registrados.</p>
+    {% endif %}
+
+    <h2>Total: R$ {{ venda.total|floatformat:2 }}</h2>
+
+    <p>
+        <a href="{% url 'historico_vendas' %}">
+            Voltar ao histórico
+        </a>
+    </p>
+
+</body>
+
+</html>

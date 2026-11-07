@@ -3,6 +3,8 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
+from produtos.models import Produto
+from .models import Venda
 
 from produtos.models import Produto
 
@@ -19,6 +21,18 @@ def eh_operador_venda(user):
         user.is_superuser
         or user.groups.filter(name__in=["Administrador", "Caixa"]).exists()
     )
+
+
+def vendas_visiveis_para(user):
+    vendas = Venda.objects.select_related("user")
+
+    if user.is_superuser or user.groups.filter(name="Administrador").exists():
+        return vendas
+
+    if user.groups.filter(name="Caixa").exists():
+        return vendas.filter(user=user)
+
+    raise PermissionDenied
 
 
 @login_required
@@ -203,3 +217,35 @@ def finalizar_venda(request):
     )
 
     return redirect("iniciar_venda")
+
+
+@login_required
+def historico_vendas(request):
+    vendas = vendas_visiveis_para(request.user)
+
+    return render(
+        request,
+        "vendas/historico_vendas.html",
+        {
+            "vendas": vendas,
+        },
+    )
+
+
+@login_required
+def detalhes_venda(request, venda_id):
+    venda = get_object_or_404(
+        vendas_visiveis_para(request.user),
+        id=venda_id,
+    )
+
+    itens = venda.itens.select_related("product")
+
+    return render(
+        request,
+        "vendas/detalhes_venda.html",
+        {
+            "venda": venda,
+            "itens": itens,
+        },
+    )

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Histórico de Vendas - Central do Varejo</title>
+</head>
+
+<body>
+    <h1>Histórico de Vendas</h1>
+
+    <p>Consulte as vendas realizadas no sistema.</p>
+
+    {% if vendas %}
+    <table border="1" cellpadding="8">
+        <thead>
+            <tr>
+                <th>Número da venda</th>
+                <th>Data e horário</th>
+                <th>Operador</th>
+                <th>Forma de pagamento</th>
+                <th>Total</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for venda in vendas %}
+            <tr>
+                <td>{{ venda.number }}</td>
+                <td>{{ venda.date_time|date:"d/m/Y H:i" }}</td>
+                <td>{{ venda.user.username }}</td>
+                <td>{{ venda.get_payment_method_display }}</td>
+                <td>R$ {{ venda.total|floatformat:2 }}</td>
+                <td>
+                    <a href="{% url 'detalhes_venda' venda.id %}">
+                        Ver detalhes
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>Nenhuma venda encontrada.</p>
+    {% endif %}
+
+    <p>
+        <a href="{% url 'inicio' %}">Voltar ao início</a>
+    </p>
+</body>
+
+</html>

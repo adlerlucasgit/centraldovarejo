@@ -75,4 +75,14 @@ urlpatterns = [
         vendas_views.finalizar_venda,
         name="finalizar_venda",
     ),
+    path(
+        "vendas/historico/",
+        vendas_views.historico_vendas,
+        name="historico_vendas",
+    ),
+    path(
+        "vendas/historico/<int:venda_id>/",
+        vendas_views.detalhes_venda,
+        name="detalhes_venda",
+    ),
 ]

@@ -7,6 +7,7 @@ from django.urls import reverse
 from estoque.models import Estoque, MovimentacaoEstoque
 from produtos.models import Produto
 from .models import Venda, ItemVenda
+from django.contrib.auth.models import Group
 
 User = get_user_model()
 
@@ -136,3 +137,111 @@ class FinalizarVendaTests(TestCase):
 
         self.estoque.refresh_from_db()
         self.assertEqual(self.estoque.current_stock, 10)
+
+
+class HistoricoVendasTests(TestCase):
+
+    def setUp(self):
+        self.admin = User.objects.create_user(
+            username="admin_historico",
+            password="senha_teste_123",
+            is_superuser=True,
+        )
+
+        grupo_caixa = Group.objects.create(name="Caixa")
+
+        self.caixa = User.objects.create_user(
+            username="caixa_historico",
+            password="senha_teste_123",
+        )
+        self.caixa.groups.add(grupo_caixa)
+
+        self.outro_caixa = User.objects.create_user(
+            username="outro_caixa",
+            password="senha_teste_123",
+        )
+        self.outro_caixa.groups.add(grupo_caixa)
+
+        self.venda_admin = Venda.objects.create(
+            number="HIST-001",
+            user=self.admin,
+            total=Decimal("50.00"),
+            payment_method="DINHEIRO",
+        )
+
+        self.venda_caixa = Venda.objects.create(
+            number="HIST-002",
+            user=self.caixa,
+            total=Decimal("30.00"),
+            payment_method="PIX",
+        )
+
+        self.venda_outro_caixa = Venda.objects.create(
+            number="HIST-003",
+            user=self.outro_caixa,
+            total=Decimal("20.00"),
+            payment_method="CARTAO",
+        )
+
+        self.produto = Produto.objects.create(
+            codigo="HISTPROD001",
+            nome="Produto para Histórico",
+            preco=Decimal("10.00"),
+        )
+
+        ItemVenda.objects.create(
+            sale=self.venda_caixa,
+            product=self.produto,
+            quantity=3,
+            unit_price=Decimal("10.00"),
+            subtotal=Decimal("30.00"),
+        )
+
+    def test_administrador_visualiza_todas_as_vendas(self):
+        self.client.force_login(self.admin)
+
+        response = self.client.get(reverse("historico_vendas"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.context["vendas"]), 3)
+
+    def test_caixa_visualiza_somente_suas_vendas(self):
+        self.client.force_login(self.caixa)
+
+        response = self.client.get(reverse("historico_vendas"))
+
+        self.assertEqual(response.status_code, 200)
+
+        vendas = list(response.context["vendas"])
+
+        self.assertEqual(len(vendas), 1)
+        self.assertEqual(vendas[0], self.venda_caixa)
+
+    def test_caixa_nao_acessa_detalhes_de_outra_venda(self):
+        self.client.force_login(self.caixa)
+
+        response = self.client.get(
+            reverse(
+                "detalhes_venda",
+                args=[self.venda_admin.id],
+            )
+        )
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_caixa_acessa_detalhes_de_sua_propria_venda(self):
+        self.client.force_login(self.caixa)
+
+        response = self.client.get(
+            reverse(
+                "detalhes_venda",
+                args=[self.venda_caixa.id],
+            )
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.context["venda"],
+            self.venda_caixa,
+        )
+        self.assertEqual(len(response.context["itens"]), 1)
