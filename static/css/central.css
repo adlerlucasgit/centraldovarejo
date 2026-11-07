@@ -1,0 +1,39 @@
+:root {
+    --cor-principal: #1E8E3E;
+    --cor-principal-escura: #176F32;
+    --cor-fundo: #F5F6F7;
+    --cor-texto: #212529;
+    --cor-texto-secundario: #6C757D;
+    --cor-borda: #E5E7EB;
+    --cor-branca: #FFFFFF;
+
+    --fonte-principal: "Inter", sans-serif;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    min-height: 100%;
+}
+
+body {
+    min-height: 100vh;
+    margin: 0;
+    font-family: var(--fonte-principal);
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 1.5;
+    color: var(--cor-texto);
+    background-color: var(--cor-fundo);
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+a:hover {
+    color: var(--cor-principal);
+}
