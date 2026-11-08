@@ -18,9 +18,14 @@ def eh_administrador(user):
 
 
 def pode_consultar_estoque(user):
-    if user.groups.filter(name__in=["Administrador", "Caixa"]).exists():
+    if user.is_authenticated and (
+        user.is_superuser
+        or user.groups.filter(name__in=["Administrador", "Caixa"]).exists()
+    ):
         return True
+
     raise PermissionDenied
+
 
 @login_required
 @user_passes_test(eh_administrador)

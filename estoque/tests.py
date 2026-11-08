@@ -332,3 +332,17 @@ class EstoqueTests(TestCase):
             with self.subTest(rota=rota):
                 resposta = self.client.get(reverse(rota))
                 self.assertEqual(resposta.status_code, 200)
+
+    def test_superusuario_sem_grupo_pode_consultar_estoque(self):
+        superusuario = User.objects.create_superuser(
+            username="superuser_consulta",
+            email="consulta@teste.com",
+            password="senha_teste_123",
+        )
+
+        self.client.force_login(superusuario)
+
+        response = self.client.get(reverse("consultar_estoque"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.context["estoques"]), 1)
