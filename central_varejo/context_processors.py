@@ -16,12 +16,13 @@ def perfil_usuario(request):
     pertence_caixa = usuario.groups.filter(name="Caixa").exists()
 
     eh_administrador = usuario.is_superuser or pertence_administrador
+    eh_caixa = pertence_caixa and not eh_administrador
 
     return {
         "eh_administrador": eh_administrador,
-        "eh_caixa": pertence_caixa,
-        "pode_operar_vendas": eh_administrador or pertence_caixa,
-        "pode_consultar_estoque": pertence_administrador or pertence_caixa,
-        "pode_gerenciar_estoque": pertence_administrador,
+        "eh_caixa": eh_caixa,
+        "pode_operar_vendas": eh_administrador or eh_caixa,
+        "pode_consultar_estoque": eh_administrador or eh_caixa,
+        "pode_gerenciar_estoque": eh_administrador,
         "pode_ver_relatorios": eh_administrador,
     }

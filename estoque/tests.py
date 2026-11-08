@@ -312,3 +312,23 @@ class EstoqueTests(TestCase):
 
         self.assertEqual(response.status_code, 302)
         self.assertIn("/login/", response.url)
+
+    def test_superusuario_sem_grupo_pode_gerenciar_estoque(self):
+        superusuario = User.objects.create_superuser(
+            username="superuser_estoque",
+            email="superuser@teste.com",
+            password="senha_teste_123",
+        )
+
+        self.client.force_login(superusuario)
+
+        rotas = [
+            "registrar_entrada",
+            "registrar_ajuste",
+            "historico_movimentacoes",
+        ]
+
+        for rota in rotas:
+            with self.subTest(rota=rota):
+                resposta = self.client.get(reverse(rota))
+                self.assertEqual(resposta.status_code, 200)

@@ -7,11 +7,15 @@ from django.shortcuts import render, redirect
 from .forms import EntradaEstoqueForm, AjusteEstoqueForm
 from .models import Estoque, MovimentacaoEstoque
 
-def eh_administrador(user):
-    if not user.groups.filter(name="Administrador").exists():
-        raise PermissionDenied
 
-    return True
+def eh_administrador(user):
+    if user.is_authenticated and (
+        user.is_superuser or user.groups.filter(name="Administrador").exists()
+    ):
+        return True
+
+    raise PermissionDenied
+
 
 def pode_consultar_estoque(user):
     if user.groups.filter(name__in=["Administrador", "Caixa"]).exists():

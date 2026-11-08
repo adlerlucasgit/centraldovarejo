@@ -1,6 +1,8 @@
 from datetime import timedelta
+from central_varejo.context_processors import perfil_usuario
+from types import SimpleNamespace
+from django.contrib.auth.models import AnonymousUser
 from decimal import Decimal
-
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.test import TestCase
@@ -232,3 +234,112 @@ class LoginTests(TestCase):
 
         self.assertRedirects(response, reverse("login"))
         self.assertNotIn("_auth_user_id", self.client.session)
+
+
+from types import SimpleNamespace
+
+from django.contrib.auth.models import AnonymousUser
+
+
+class PerfilUsuarioTests(TestCase):
+
+    def setUp(self):
+        self.grupo_admin, _ = Group.objects.get_or_create(name="Administrador")
+        self.grupo_caixa, _ = Group.objects.get_or_create(name="Caixa")
+
+    def test_usuario_nao_autenticado_nao_recebe_permissoes(self):
+        request = SimpleNamespace(user=AnonymousUser())
+
+        contexto = perfil_usuario(request)
+
+        self.assertFalse(contexto["eh_administrador"])
+        self.assertFalse(contexto["eh_caixa"])
+        self.assertFalse(contexto["pode_operar_vendas"])
+        self.assertFalse(contexto["pode_consultar_estoque"])
+        self.assertFalse(contexto["pode_gerenciar_estoque"])
+        self.assertFalse(contexto["pode_ver_relatorios"])
+
+    def test_superusuario_recebe_permissoes_administrativas(self):
+        usuario = User.objects.create_superuser(
+            username="super_contexto",
+            email="super@teste.com",
+            password="SenhaForte@2026",
+        )
+
+        request = SimpleNamespace(user=usuario)
+
+        contexto = perfil_usuario(request)
+
+        self.assertTrue(contexto["eh_administrador"])
+        self.assertFalse(contexto["eh_caixa"])
+        self.assertTrue(contexto["pode_operar_vendas"])
+        self.assertTrue(contexto["pode_consultar_estoque"])
+        self.assertTrue(contexto["pode_gerenciar_estoque"])
+        self.assertTrue(contexto["pode_ver_relatorios"])
+
+    def test_usuario_administrador_recebe_permissoes_corretas(self):
+        usuario = User.objects.create_user(
+            username="admin_contexto",
+            password="senha_teste_123",
+        )
+        usuario.groups.add(self.grupo_admin)
+
+        request = SimpleNamespace(user=usuario)
+
+        contexto = perfil_usuario(request)
+
+        self.assertTrue(contexto["eh_administrador"])
+        self.assertFalse(contexto["eh_caixa"])
+        self.assertTrue(contexto["pode_gerenciar_estoque"])
+        self.assertTrue(contexto["pode_ver_relatorios"])
+
+    def test_usuario_caixa_recebe_permissoes_restritas(self):
+        usuario = User.objects.create_user(
+            username="caixa_contexto",
+            password="senha_teste_123",
+        )
+        usuario.groups.add(self.grupo_caixa)
+
+        request = SimpleNamespace(user=usuario)
+
+        contexto = perfil_usuario(request)
+
+        self.assertFalse(contexto["eh_administrador"])
+        self.assertTrue(contexto["eh_caixa"])
+        self.assertTrue(contexto["pode_operar_vendas"])
+        self.assertTrue(contexto["pode_consultar_estoque"])
+        self.assertFalse(contexto["pode_gerenciar_estoque"])
+        self.assertFalse(contexto["pode_ver_relatorios"])
+
+    def test_administrador_tem_prioridade_sobre_caixa(self):
+        usuario = User.objects.create_user(
+            username="admin_caixa_contexto",
+            password="senha_teste_123",
+        )
+        usuario.groups.add(self.grupo_admin, self.grupo_caixa)
+
+        request = SimpleNamespace(user=usuario)
+
+        contexto = perfil_usuario(request)
+
+        self.assertTrue(contexto["eh_administrador"])
+        self.assertFalse(contexto["eh_caixa"])
+        self.assertTrue(contexto["pode_gerenciar_estoque"])
+        self.assertTrue(contexto["pode_ver_relatorios"])
+
+    def test_usuario_sem_grupo_nao_recebe_permissoes(self):
+        usuario = User.objects.create_user(
+            username="sem_grupo_contexto",
+            password="senha_teste_123",
+        )
+
+        request = SimpleNamespace(user=usuario)
+
+        contexto = perfil_usuario(request)
+
+        self.assertFalse(contexto["eh_administrador"])
+        self.assertFalse(contexto["eh_caixa"])
+        self.assertFalse(contexto["pode_operar_vendas"])
+        self.assertFalse(contexto["pode_consultar_estoque"])
+        self.assertFalse(contexto["pode_gerenciar_estoque"])
+        self.assertFalse(contexto["pode_ver_relatorios"])
