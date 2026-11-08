@@ -43,6 +43,7 @@ def inicio(request):
     # Produtos que precisam de atenção no estoque
     alertas_estoque_baixo = Estoque.objects.filter(
         produto__ativo=True,
+        current_stock__gte=1,
         current_stock__lte=20,
     ).count()
 

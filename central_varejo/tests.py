@@ -133,16 +133,20 @@ class DashboardTests(TestCase):
         self.assertEqual(vendas[0], self.venda1)
 
     def test_calcular_indicadores_do_dashboard(self):
+        Estoque.objects.filter(produto=self.produto2).update(
+            current_stock=0
+        )
+
         self.client.force_login(self.admin)
         response = self.client.get(reverse("inicio"))
 
         self.assertEqual(response.context["total_produtos"], 2)
-        self.assertEqual(response.context["itens_em_estoque"], 15)
-        self.assertEqual(response.context["alertas_estoque_baixo"], 2)
+        self.assertEqual(response.context["itens_em_estoque"], 10)
+        self.assertEqual(response.context["alertas_estoque_baixo"], 1)
         self.assertEqual(
             response.context["total_vendas_dia"],
             Decimal("150.00"),
-        )
+    )
 
     def test_filtrar_dashboard_por_data(self):
         self.client.force_login(self.admin)
