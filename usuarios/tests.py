@@ -173,3 +173,72 @@ class GerenciamentoUsuariosTests(TestCase):
 
         self.assertEqual(resposta.status_code, 302)
         self.assertIn("/login/", resposta.url)
+
+
+class AutenticacaoTests(TestCase):
+
+    def setUp(self):
+        self.grupo_caixa, _ = Group.objects.get_or_create(name="Caixa")
+
+        self.usuario = User.objects.create_user(
+            username="usuario_login",
+            email="login@teste.com",
+            password="SenhaForte@2026",
+        )
+
+        self.usuario.groups.add(self.grupo_caixa)
+
+    def test_login_com_credenciais_corretas(self):
+        resposta = self.client.post(
+            reverse("login"),
+            {
+                "username": "usuario_login",
+                "password": "SenhaForte@2026",
+            },
+        )
+
+        self.assertRedirects(resposta, reverse("inicio"))
+        self.assertTrue(self.client.session.get("_auth_user_id"))
+
+    def test_login_com_senha_incorreta(self):
+        resposta = self.client.post(
+            reverse("login"),
+            {
+                "username": "usuario_login",
+                "password": "SenhaIncorreta",
+            },
+        )
+
+        self.assertEqual(resposta.status_code, 200)
+        self.assertFalse(self.client.session.get("_auth_user_id"))
+        self.assertTrue(resposta.context["form"].errors)
+
+    def test_usuario_suspenso_nao_consegue_fazer_login(self):
+        self.usuario.is_active = False
+        self.usuario.save(update_fields=["is_active"])
+
+        resposta = self.client.post(
+            reverse("login"),
+            {
+                "username": "usuario_login",
+                "password": "SenhaForte@2026",
+            },
+        )
+
+        self.assertEqual(resposta.status_code, 200)
+        self.assertFalse(self.client.session.get("_auth_user_id"))
+
+    def test_logout_encerra_sessao(self):
+        self.client.force_login(self.usuario)
+
+        resposta = self.client.post(reverse("logout"))
+
+        self.assertRedirects(resposta, reverse("login"))
+        self.assertFalse(self.client.session.get("_auth_user_id"))
+
+    def test_pagina_de_login_carrega_corretamente(self):
+        resposta = self.client.get(reverse("login"))
+
+        self.assertEqual(resposta.status_code, 200)
+        self.assertContains(resposta, "Central do Varejo")
+        self.assertContains(resposta, "Entrar no sistema")
