@@ -136,15 +136,26 @@
                 </a>
                 {% endif %}
 
-                {% if pode_ver_relatorios %}
+                {% if pode_ver_relatorios or eh_administrador %}
                 <span class="sidebar-section-title">GESTÃO</span>
+                {% endif %}
 
+                {% if pode_ver_relatorios %}
                 <a href="{% url 'relatorio_geral' %}"
                     class="sidebar-link {% if request.resolver_match.url_name == 'relatorio_geral' %}active{% endif %}">
                     <i class="bi bi-bar-chart"></i>
                     <span>Relatórios</span>
                 </a>
                 {% endif %}
+
+                {% if eh_administrador %}
+                <a href="{% url 'listar_usuarios' %}"
+                    class="sidebar-link {% if request.resolver_match.url_name == 'listar_usuarios' or request.resolver_match.url_name == 'cadastrar_usuario' or request.resolver_match.url_name == 'editar_usuario' %}active{% endif %}">
+                    <i class="bi bi-people"></i>
+                    <span>Usuários</span>
+                </a>
+                {% endif %}
+
 
             </nav>
 

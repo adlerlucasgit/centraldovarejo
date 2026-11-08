@@ -86,4 +86,5 @@ urlpatterns = [
         name="detalhes_venda",
     ),
     path("relatorios/", include("relatorios.urls")),
+    path("usuarios/", include("usuarios.urls")),
 ]
