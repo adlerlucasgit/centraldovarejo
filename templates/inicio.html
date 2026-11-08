@@ -384,6 +384,7 @@ Bem-vindo, {{ request.user.username }}
 </section>
 
 <!-- Alerta de estoque -->
+{% if alertas_estoque_baixo > 0 %}
 <section class="stock-alert">
 
     <div class="stock-alert-content">
@@ -411,9 +412,10 @@ Bem-vindo, {{ request.user.username }}
     </a>
 
 </section>
+{% endif %}
 
 <!-- Últimas vendas e ações rápidas -->
-<section class="row g-3">
+<section class="row g-3 mt-4">
 
     <!-- Últimas vendas -->
     <div class="col-lg-8">
