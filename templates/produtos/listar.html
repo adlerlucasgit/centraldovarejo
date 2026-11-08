@@ -60,7 +60,8 @@
                                 </a>
 
                                 <form method="post" action="{% url 'desativar_produto' produto.id %}"
-                                    onsubmit="return confirm('Deseja realmente desativar este produto?');">
+                                    data-confirm="Deseja realmente desativar este produto? Ele deixará de aparecer na listagem de produtos ativos."
+                                    data-confirm-titulo="Desativar produto" data-confirm-tipo="warning" data-confirm-botao="Desativar">
 
                                     {% csrf_token %}
 

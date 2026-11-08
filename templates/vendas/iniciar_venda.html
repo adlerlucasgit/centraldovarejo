@@ -139,7 +139,8 @@
                         <td class="text-end pe-4">
 
                             <form method="post" action="{% url 'remover_produto_venda' item.produto.id %}"
-                                onsubmit="return confirm('Deseja remover este produto do carrinho?');">
+                                data-confirm="Deseja remover este produto do carrinho?" data-confirm-titulo="Remover produto"
+                                data-confirm-tipo="warning" data-confirm-botao="Remover">
 
                                 {% csrf_token %}
 
@@ -186,7 +187,8 @@
             </h5>
 
             <form method="post" action="{% url 'finalizar_venda' %}" novalidate
-                onsubmit="return confirm('Deseja realmente finalizar esta venda?');">
+                data-confirm="Deseja realmente finalizar esta venda? Confira os produtos e a forma de pagamento antes de confirmar. Após finalizada, a venda não poderá ser cancelada."
+                data-confirm-titulo="Finalizar venda" data-confirm-tipo="success" data-confirm-botao="Finalizar venda">
 
                 {% csrf_token %}
 

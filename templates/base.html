@@ -214,8 +214,47 @@
 
     </div>
 
+    <!-- Modal de confirmação personalizada -->
+    <div class="modal fade" id="modalConfirmacao" tabindex="-1" aria-labelledby="confirmacaoTitulo" aria-hidden="true">
+
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+
+                <div class="modal-body text-center p-4">
+
+                    <i id="confirmacaoIcone" class="bi bi-info-circle-fill text-primary fs-1"></i>
+
+                    <h5 id="confirmacaoTitulo" class="fw-bold mt-3">
+                        Confirmar ação
+                    </h5>
+
+                    <p id="confirmacaoMensagem" class="text-secondary mb-0">
+                        Deseja realmente continuar?
+                    </p>
+
+                </div>
+
+                <div class="modal-footer border-0 justify-content-center pt-0 pb-4">
+
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
+
+                    <button type="button" class="btn btn-primary" id="confirmacaoBotao">
+                        Confirmar
+                    </button>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+
     <!-- Bootstrap JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- JavaScript global do sistema -->
+    <script src="{% static 'js/central.js' %}"></script>
 
     {% block extra_js %}{% endblock %}
 
