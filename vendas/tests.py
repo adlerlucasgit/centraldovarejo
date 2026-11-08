@@ -591,3 +591,102 @@ class CarrinhoVendaTests(TestCase):
         response = self.client.get(reverse("iniciar_venda"))
 
         self.assertEqual(response.status_code, 403)
+
+
+class VendaAdminTests(TestCase):
+
+    def setUp(self):
+        self.usuario = User.objects.create_superuser(
+            username="admin_vendas_teste",
+            email="admin_vendas_teste@example.com",
+            password="senha_teste_123",
+        )
+
+        self.produto = Produto.objects.create(
+            codigo="ADMINVENDA001",
+            nome="Produto para Teste do Admin",
+            preco=Decimal("10.00"),
+        )
+
+        self.venda = Venda.objects.create(
+            number="ADMIN-001",
+            user=self.usuario,
+            total=Decimal("20.00"),
+            payment_method="PIX",
+        )
+
+        self.item = ItemVenda.objects.create(
+            sale=self.venda,
+            product=self.produto,
+            quantity=2,
+            unit_price=Decimal("10.00"),
+            subtotal=Decimal("20.00"),
+        )
+
+        self.client.force_login(self.usuario)
+
+    def test_bloquear_inclusao_de_venda(self):
+        response = self.client.get(reverse("admin:vendas_venda_add"))
+
+        self.assertEqual(response.status_code, 403)
+
+    def test_bloquear_alteracao_de_venda(self):
+        response = self.client.get(
+            reverse(
+                "admin:vendas_venda_change",
+                args=[self.venda.id],
+            )
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(response.context["has_change_permission"])
+        self.assertTrue(response.context["has_view_permission"])
+
+    def test_bloquear_exclusao_de_venda(self):
+        response = self.client.get(
+            reverse(
+                "admin:vendas_venda_delete",
+                args=[self.venda.id],
+            )
+        )
+
+        self.assertEqual(response.status_code, 403)
+
+    def test_bloquear_inclusao_de_item(self):
+        response = self.client.get(reverse("admin:vendas_itemvenda_add"))
+
+        self.assertEqual(response.status_code, 403)
+
+    def test_bloquear_alteracao_de_item(self):
+        response = self.client.get(
+            reverse(
+                "admin:vendas_itemvenda_change",
+                args=[self.item.id],
+            )
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(response.context["has_change_permission"])
+        self.assertTrue(response.context["has_view_permission"])
+
+    def test_bloquear_exclusao_de_item(self):
+        response = self.client.get(
+            reverse(
+                "admin:vendas_itemvenda_delete",
+                args=[self.item.id],
+            )
+        )
+
+        self.assertEqual(response.status_code, 403)
+
+    def test_permitir_consulta_de_vendas(self):
+        response = self.client.get(reverse("admin:vendas_venda_changelist"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, self.venda.number)
+
+    def test_permitir_consulta_de_itens(self):
+        response = self.client.get(reverse("admin:vendas_itemvenda_changelist"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, self.produto.nome)

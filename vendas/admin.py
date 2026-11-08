@@ -7,6 +7,9 @@ class ItemVendaInline(admin.TabularInline):
     model = ItemVenda
     extra = 0
 
+    def has_add_permission(self, request, obj=None):
+        return False
+
 
 @admin.register(Venda)
 class VendaAdmin(admin.ModelAdmin):
@@ -35,6 +38,9 @@ class VendaAdmin(admin.ModelAdmin):
 
     inlines = [ItemVendaInline]
 
+    def has_add_permission(self, request):
+        return False
+
     def has_change_permission(self, request, obj=None):
         return False
 
@@ -59,6 +65,9 @@ class ItemVendaAdmin(admin.ModelAdmin):
         "unit_price",
         "subtotal",
     )
+
+    def has_add_permission(self, request):
+        return False
 
     def has_change_permission(self, request, obj=None):
         return False

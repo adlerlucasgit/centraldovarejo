@@ -6,7 +6,10 @@ class FiltroRelatorioForm(forms.Form):
         required=True,
         label="Data inicial",
         widget=forms.DateInput(
-            attrs={"type": "date"},
+            attrs={
+                "type": "date",
+                "class": "form-control",
+            },
             format="%Y-%m-%d",
         ),
         input_formats=["%Y-%m-%d"],
@@ -16,7 +19,10 @@ class FiltroRelatorioForm(forms.Form):
         required=True,
         label="Data final",
         widget=forms.DateInput(
-            attrs={"type": "date"},
+            attrs={
+                "type": "date",
+                "class": "form-control",
+            },
             format="%Y-%m-%d",
         ),
         input_formats=["%Y-%m-%d"],
