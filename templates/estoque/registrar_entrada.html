@@ -14,12 +14,62 @@
 <div class="card border-0 shadow-sm">
     <div class="card-body p-4">
 
-        <form method="POST">
+        <form method="POST" novalidate>
             {% csrf_token %}
 
-            {{ form.as_p }}
+            {% if form.non_field_errors %}
+            <div class="alert alert-danger" role="alert">
+                {{ form.non_field_errors }}
+            </div>
+            {% endif %}
 
-            <div class="d-flex gap-2 mt-4">
+            <div class="row g-4">
+
+                <div class="col-12 col-md-8">
+                    <label for="{{ form.produto.id_for_label }}" class="form-label">
+                        {{ form.produto.label }}
+                    </label>
+
+                    {{ form.produto }}
+
+                    {% for error in form.produto.errors %}
+                    <div class="text-danger small mt-1">
+                        {{ error }}
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="col-12 col-md-4">
+                    <label for="{{ form.quantity.id_for_label }}" class="form-label">
+                        {{ form.quantity.label }}
+                    </label>
+
+                    {{ form.quantity }}
+
+                    {% for error in form.quantity.errors %}
+                    <div class="text-danger small mt-1">
+                        {{ error }}
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="col-12">
+                    <label for="{{ form.reason.id_for_label }}" class="form-label">
+                        {{ form.reason.label }}
+                    </label>
+
+                    {{ form.reason }}
+
+                    {% for error in form.reason.errors %}
+                    <div class="text-danger small mt-1">
+                        {{ error }}
+                    </div>
+                    {% endfor %}
+                </div>
+
+            </div>
+
+            <div class="d-flex flex-wrap gap-2 mt-4">
                 <button type="submit" class="btn btn-success">
                     <i class="bi bi-check-circle me-1"></i>
                     Registrar entrada
