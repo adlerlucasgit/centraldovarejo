@@ -1,4 +1,3 @@
-from datetime import date
 from decimal import Decimal
 
 from django.contrib.auth.decorators import login_required
@@ -26,7 +25,6 @@ def relatorio_geral(request):
         raise PermissionDenied
 
     hoje = timezone.localdate()
-
     primeiro_dia_mes = hoje.replace(day=1)
 
     formulario = FiltroRelatorioForm(
@@ -68,6 +66,7 @@ def relatorio_geral(request):
         .annotate(quantidade_vendida=Sum("quantity"))
         .order_by("-quantidade_vendida", "product__nome")[:10]
     )
+
     pagamentos = (
         vendas.values("payment_method")
         .annotate(quantidade=Count("id"))
@@ -77,14 +76,27 @@ def relatorio_geral(request):
     pagamentos = [
         {
             **pagamento,
-            "nome": Venda.FormaPagamento(
-                pagamento["payment_method"]
-        ).label,
+            "nome": Venda.FormaPagamento(pagamento["payment_method"]).label,
         }
-    for pagamento in pagamentos
-]
+        for pagamento in pagamentos
+    ]
 
-    forma_pagamento_mais_utilizada = pagamentos[0] if pagamentos else None
+    forma_pagamento_mais_utilizada = None
+    ha_empate_pagamento = False
+
+    if pagamentos:
+        maior_quantidade = pagamentos[0]["quantidade"]
+
+        formas_mais_utilizadas = [
+            pagamento
+            for pagamento in pagamentos
+            if pagamento["quantidade"] == maior_quantidade
+        ]
+
+        if len(formas_mais_utilizadas) == 1:
+            forma_pagamento_mais_utilizada = formas_mais_utilizadas[0]
+        else:
+            ha_empate_pagamento = True
 
     total_produtos_cadastrados = Produto.objects.count()
 
@@ -110,6 +122,7 @@ def relatorio_geral(request):
         "produtos_mais_vendidos": produtos_mais_vendidos,
         "pagamentos": pagamentos,
         "forma_pagamento_mais_utilizada": forma_pagamento_mais_utilizada,
+        "ha_empate_pagamento": ha_empate_pagamento,
         "total_produtos_cadastrados": total_produtos_cadastrados,
         "estoque_baixo": estoque_baixo,
         "estoque_zerado": estoque_zerado,

@@ -298,6 +298,8 @@
 
                 {% if forma_pagamento_mais_utilizada %}
                 {{ forma_pagamento_mais_utilizada.nome }}
+                {% elif ha_empate_pagamento %}
+                Empate entre as formas de pagamento
                 {% else %}
                 Sem vendas
                 {% endif %}
