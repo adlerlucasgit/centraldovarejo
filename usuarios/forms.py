@@ -2,6 +2,7 @@ from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import Group
+from produtos.permissoes import configurar_permissoes_grupo_produtos
 
 User = get_user_model()
 
@@ -68,6 +69,8 @@ class UsuarioCriacaoForm(UserCreationForm):
             grupo, _ = Group.objects.get_or_create(
                 name=self.cleaned_data["perfil"]
             )
+
+            configurar_permissoes_grupo_produtos(grupo)
             usuario.groups.set([grupo])
 
         return usuario
@@ -132,12 +135,13 @@ class UsuarioEdicaoForm(forms.ModelForm):
         usuario = super().save(commit=commit)
 
         if commit:
-            grupo, _ = Group.objects.get_or_create(
-                name=self.cleaned_data["perfil"]
-            )
+            grupo, _ = Group.objects.get_or_create(name=self.cleaned_data["perfil"])
+
+            configurar_permissoes_grupo_produtos(grupo)
             usuario.groups.set([grupo])
 
         return usuario
+
 
 for form_class in [UsuarioCriacaoForm, UsuarioEdicaoForm]:
     for field in form_class.base_fields.values():

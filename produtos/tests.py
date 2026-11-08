@@ -1,9 +1,10 @@
 from decimal import Decimal
 
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import Permission
+from django.contrib.auth.models import Group, Permission
 from django.test import TestCase
 from django.urls import reverse
+from produtos.permissoes import configurar_permissoes_grupo_produtos
 
 from estoque.models import Estoque
 from .models import Produto
@@ -14,6 +15,13 @@ User = get_user_model()
 class ProdutoTests(TestCase):
 
     def setUp(self):
+        self.grupo_admin, _ = Group.objects.get_or_create(name="Administrador")
+
+        self.grupo_caixa, _ = Group.objects.get_or_create(name="Caixa")
+
+        configurar_permissoes_grupo_produtos(self.grupo_admin)
+        configurar_permissoes_grupo_produtos(self.grupo_caixa)
+
         self.usuario = User.objects.create_user(
             username="usuario_produto",
             password="senha_teste_123",
@@ -215,3 +223,67 @@ class ProdutoTests(TestCase):
 
         self.assertEqual(response.status_code, 302)
         self.assertIn("/login/", response.url)
+
+    def test_administrador_do_grupo_pode_gerenciar_produtos(self):
+        grupo_admin = Group.objects.get(name="Administrador")
+
+        usuario_admin = User.objects.create_user(
+            username="admin_grupo",
+            password="senha_teste_123",
+        )
+        usuario_admin.groups.add(grupo_admin)
+
+        produto = self.criar_produto()
+
+        self.client.force_login(usuario_admin)
+
+        rotas = [
+            reverse("listar_produtos"),
+            reverse("cadastrar_produto"),
+            reverse("editar_produto", args=[produto.id]),
+        ]
+
+        for rota in rotas:
+            with self.subTest(rota=rota):
+                resposta = self.client.get(rota)
+                self.assertEqual(resposta.status_code, 200)
+
+        resposta = self.client.post(reverse("desativar_produto", args=[produto.id]))
+
+        self.assertRedirects(resposta, reverse("listar_produtos"))
+
+        produto.refresh_from_db()
+        self.assertFalse(produto.ativo)
+
+    def test_caixa_do_grupo_pode_consultar_mas_nao_gerenciar_produtos(self):
+        grupo_caixa = Group.objects.get(name="Caixa")
+
+        usuario_caixa = User.objects.create_user(
+            username="caixa_grupo",
+            password="senha_teste_123",
+        )
+        usuario_caixa.groups.add(grupo_caixa)
+
+        produto = self.criar_produto()
+
+        self.client.force_login(usuario_caixa)
+
+        resposta = self.client.get(reverse("listar_produtos"))
+        self.assertEqual(resposta.status_code, 200)
+
+        rotas_restritas = [
+            reverse("cadastrar_produto"),
+            reverse("editar_produto", args=[produto.id]),
+        ]
+
+        for rota in rotas_restritas:
+            with self.subTest(rota=rota):
+                resposta = self.client.get(rota)
+                self.assertEqual(resposta.status_code, 403)
+
+        resposta = self.client.post(reverse("desativar_produto", args=[produto.id]))
+
+        self.assertEqual(resposta.status_code, 403)
+
+        produto.refresh_from_db()
+        self.assertTrue(produto.ativo)
