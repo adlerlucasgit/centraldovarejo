@@ -224,6 +224,13 @@ class RelatorioGeralTests(TestCase):
         )
 
         self.assertEqual(pagamento["quantidade"], 2)
+        self.assertEqual(pagamento["nome"], "PIX")
+
+        pagamentos = response.context["pagamentos"]
+        nomes_pagamentos = {item["nome"] for item in pagamentos}
+
+        self.assertIn("Dinheiro", nomes_pagamentos)
+        self.assertIn("PIX", nomes_pagamentos)
 
     def test_vendas_fora_do_periodo_nao_sao_contabilizadas(self):
         response = self.acessar_relatorio()

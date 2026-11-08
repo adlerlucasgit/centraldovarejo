@@ -68,14 +68,23 @@ def relatorio_geral(request):
         .annotate(quantidade_vendida=Sum("quantity"))
         .order_by("-quantidade_vendida", "product__nome")[:10]
     )
-
     pagamentos = (
         vendas.values("payment_method")
         .annotate(quantidade=Count("id"))
         .order_by("-quantidade")
     )
 
-    forma_pagamento_mais_utilizada = pagamentos.first()
+    pagamentos = [
+        {
+            **pagamento,
+            "nome": Venda.FormaPagamento(
+                pagamento["payment_method"]
+        ).label,
+        }
+    for pagamento in pagamentos
+]
+
+    forma_pagamento_mais_utilizada = pagamentos[0] if pagamentos else None
 
     total_produtos_cadastrados = Produto.objects.count()
 

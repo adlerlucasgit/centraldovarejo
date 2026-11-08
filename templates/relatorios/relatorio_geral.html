@@ -268,7 +268,7 @@
                         {% for pagamento in pagamentos %}
 
                         <tr>
-                            <td>{{ pagamento.payment_method }}</td>
+                            <td>{{ pagamento.nome }}</td>
                             <td>{{ pagamento.quantidade }}</td>
                         </tr>
 
@@ -297,7 +297,7 @@
             <div class="fw-semibold fs-5 mt-1">
 
                 {% if forma_pagamento_mais_utilizada %}
-                {{ forma_pagamento_mais_utilizada.payment_method }}
+                {{ forma_pagamento_mais_utilizada.nome }}
                 {% else %}
                 Sem vendas
                 {% endif %}
