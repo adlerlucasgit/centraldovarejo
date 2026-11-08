@@ -2,6 +2,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.test import TestCase
 from django.urls import reverse
+from vendas.models import Venda
 
 User = get_user_model()
 
@@ -137,6 +138,27 @@ class GerenciamentoUsuariosTests(TestCase):
 
         self.assertRedirects(resposta, reverse("listar_usuarios"))
         self.assertFalse(User.objects.filter(id=self.caixa.id).exists())
+
+    def test_nao_excluir_usuario_com_vendas_registradas(self):
+        venda = Venda.objects.create(
+            number="VENDA-TESTE-001",
+            user=self.caixa,
+            payment_method=Venda.FormaPagamento.PIX,
+        )
+
+        resposta = self.client.post(
+            reverse("excluir_usuario", args=[self.caixa.id]),
+            follow=True,
+        )
+
+        self.assertEqual(resposta.status_code, 200)
+        self.assertTrue(User.objects.filter(id=self.caixa.id).exists())
+        self.assertTrue(Venda.objects.filter(id=venda.id).exists())
+
+        self.assertContains(
+            resposta,
+            "Este usuário não pode ser excluído porque possui vendas registradas.",
+        )
 
     def test_administrador_nao_pode_suspender_a_propria_conta(self):
         resposta = self.client.post(reverse("suspender_usuario", args=[self.admin.id]))

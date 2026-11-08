@@ -6,6 +6,7 @@ from functools import wraps
 from django.db.models import Q
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_POST
+from django.db.models.deletion import ProtectedError
 
 from .forms import UsuarioCriacaoForm, UsuarioEdicaoForm
 
@@ -195,7 +196,14 @@ def excluir_usuario(request, usuario_id):
         )
         return redirect("listar_usuarios")
 
-    usuario.delete()
+    try:
+        usuario.delete()
+    except ProtectedError:
+        messages.error(
+            request,
+            "Este usuário não pode ser excluído porque possui vendas registradas.",
+        )
+        return redirect("listar_usuarios")
 
     messages.success(
         request,
