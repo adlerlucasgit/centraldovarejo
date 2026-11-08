@@ -19,3 +19,5 @@ db.sqlite3
 
 # VS Code
 .vscode/
+# Backups locais do banco de dados
+backups/
