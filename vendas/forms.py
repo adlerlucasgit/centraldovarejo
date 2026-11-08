@@ -1,5 +1,6 @@
 from django import forms
 from django.contrib.auth import get_user_model
+
 from produtos.models import Produto
 from .models import Venda
 
@@ -12,17 +13,36 @@ class ItemCarrinhoForm(forms.Form):
         ),
         label="Produto",
         empty_label="Selecione um produto",
+        widget=forms.Select(
+            attrs={
+                "class": "form-select",
+            }
+        ),
     )
 
     quantidade = forms.IntegerField(
         min_value=1,
         label="Quantidade",
+        widget=forms.NumberInput(
+            attrs={
+                "class": "form-control",
+                "placeholder": "Informe a quantidade",
+                "min": 1,
+            }
+        ),
     )
+
 
 class AtualizarQuantidadeForm(forms.Form):
     quantidade = forms.IntegerField(
         min_value=1,
         label="Nova quantidade",
+        widget=forms.NumberInput(
+            attrs={
+                "class": "form-control form-control-sm",
+                "min": 1,
+            }
+        ),
     )
 
 
@@ -34,6 +54,11 @@ class FinalizarVendaForm(forms.Form):
         ],
         label="Forma de pagamento",
         required=True,
+        widget=forms.Select(
+            attrs={
+                "class": "form-select",
+            }
+        ),
     )
 
 
@@ -41,13 +66,23 @@ class FiltroHistoricoVendasForm(forms.Form):
     data_inicial = forms.DateField(
         required=False,
         label="Data inicial",
-        widget=forms.DateInput(attrs={"type": "date"}),
+        widget=forms.DateInput(
+            attrs={
+                "type": "date",
+                "class": "form-control",
+            }
+        ),
     )
 
     data_final = forms.DateField(
         required=False,
         label="Data final",
-        widget=forms.DateInput(attrs={"type": "date"}),
+        widget=forms.DateInput(
+            attrs={
+                "type": "date",
+                "class": "form-control",
+            }
+        ),
     )
 
     operador = forms.ModelChoiceField(
@@ -60,6 +95,11 @@ class FiltroHistoricoVendasForm(forms.Form):
         required=False,
         label="Operador",
         empty_label="Todos os operadores",
+        widget=forms.Select(
+            attrs={
+                "class": "form-select",
+            }
+        ),
     )
 
     forma_pagamento = forms.ChoiceField(
@@ -69,12 +109,23 @@ class FiltroHistoricoVendasForm(forms.Form):
         ],
         required=False,
         label="Forma de pagamento",
+        widget=forms.Select(
+            attrs={
+                "class": "form-select",
+            }
+        ),
     )
 
     numero = forms.CharField(
         required=False,
         max_length=30,
         label="Número da venda",
+        widget=forms.TextInput(
+            attrs={
+                "class": "form-control",
+                "placeholder": "Informe o número da venda",
+            }
+        ),
     )
 
     def clean(self):

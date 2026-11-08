@@ -14,30 +14,62 @@
 
 <!-- Adicionar produto -->
 <div class="card border-0 shadow-sm mb-4">
-
     <div class="card-body p-4">
 
         <h5 class="fw-semibold mb-3">
             Adicionar produto
         </h5>
 
-        <form method="post">
-
+        <form method="post" novalidate>
             {% csrf_token %}
 
-            {{ form.as_p }}
+            {% if form.non_field_errors %}
+            <div class="alert alert-danger" role="alert">
+                {{ form.non_field_errors }}
+            </div>
+            {% endif %}
 
-            <button type="submit" class="btn btn-success">
+            <div class="row g-3 align-items-end">
 
-                <i class="bi bi-plus-circle me-1"></i>
-                Adicionar ao carrinho
+                <div class="col-12 col-md-8">
+                    <label for="{{ form.produto.id_for_label }}" class="form-label">
+                        {{ form.produto.label }}
+                    </label>
 
-            </button>
+                    {{ form.produto }}
 
+                    {% for error in form.produto.errors %}
+                    <div class="text-danger small mt-1">
+                        {{ error }}
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="col-12 col-md-4">
+                    <label for="{{ form.quantidade.id_for_label }}" class="form-label">
+                        {{ form.quantidade.label }}
+                    </label>
+
+                    {{ form.quantidade }}
+
+                    {% for error in form.quantidade.errors %}
+                    <div class="text-danger small mt-1">
+                        {{ error }}
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="col-12">
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-plus-circle me-1"></i>
+                        Adicionar ao carrinho
+                    </button>
+                </div>
+
+            </div>
         </form>
 
     </div>
-
 </div>
 
 <!-- Carrinho -->
@@ -46,12 +78,10 @@
     <div class="card-body p-0">
 
         <div class="p-4 border-bottom">
-
             <h5 class="fw-semibold mb-0">
                 <i class="bi bi-cart3 me-2"></i>
                 Carrinho de compras
             </h5>
-
         </div>
 
         {% if itens_carrinho %}
@@ -61,7 +91,6 @@
             <table class="table table-hover align-middle mb-0">
 
                 <thead class="table-light">
-
                     <tr>
                         <th class="px-4">Produto</th>
                         <th>Quantidade</th>
@@ -69,7 +98,6 @@
                         <th>Subtotal</th>
                         <th class="text-end pe-4">Ações</th>
                     </tr>
-
                 </thead>
 
                 <tbody>
@@ -83,7 +111,6 @@
                         </td>
 
                         <td>
-
                             <form method="post" action="{% url 'atualizar_quantidade_venda' item.produto.id %}"
                                 class="d-flex align-items-center gap-2">
 
@@ -95,13 +122,10 @@
 
                                 <button type="submit" class="btn btn-sm btn-outline-success"
                                     title="Atualizar quantidade">
-
                                     <i class="bi bi-check-lg"></i>
-
                                 </button>
 
                             </form>
-
                         </td>
 
                         <td>
@@ -120,9 +144,7 @@
                                 {% csrf_token %}
 
                                 <button type="submit" class="btn btn-sm btn-outline-danger" title="Remover produto">
-
                                     <i class="bi bi-trash"></i>
-
                                 </button>
 
                             </form>
@@ -163,27 +185,51 @@
                 Finalizar venda
             </h5>
 
-            <form method="post" action="{% url 'finalizar_venda' %}"
+            <form method="post" action="{% url 'finalizar_venda' %}" novalidate
                 onsubmit="return confirm('Deseja realmente finalizar esta venda?');">
 
                 {% csrf_token %}
 
-                {{ finalizar_form.as_p }}
+                {% if finalizar_form.non_field_errors %}
+                <div class="alert alert-danger" role="alert">
+                    {{ finalizar_form.non_field_errors }}
+                </div>
+                {% endif %}
 
-                <div class="d-flex flex-wrap gap-2">
+                <div class="row g-3 align-items-end">
 
-                    <button type="submit" class="btn btn-success">
+                    <div class="col-12 col-md-6">
 
-                        <i class="bi bi-check-circle me-1"></i>
-                        Finalizar venda
+                        <label for="{{ finalizar_form.forma_pagamento.id_for_label }}" class="form-label">
+                            {{ finalizar_form.forma_pagamento.label }}
+                        </label>
 
-                    </button>
+                        {{ finalizar_form.forma_pagamento }}
 
-                    <a href="{% url 'inicio' %}" class="btn btn-outline-secondary">
+                        {% for error in finalizar_form.forma_pagamento.errors %}
+                        <div class="text-danger small mt-1">
+                            {{ error }}
+                        </div>
+                        {% endfor %}
 
-                        Cancelar
+                    </div>
 
-                    </a>
+                    <div class="col-12">
+
+                        <div class="d-flex flex-wrap gap-2">
+
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-check-circle me-1"></i>
+                                Finalizar venda
+                            </button>
+
+                            <a href="{% url 'inicio' %}" class="btn btn-outline-secondary">
+                                Cancelar
+                            </a>
+
+                        </div>
+
+                    </div>
 
                 </div>
 
